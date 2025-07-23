@@ -1,3 +1,4 @@
 node_modules/
 .vscode/
 frontend/OneSignalSDKWorker.js
+crawler.js
