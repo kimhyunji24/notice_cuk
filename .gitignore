@@ -1,5 +1,13 @@
-node_modules/
-.vscode/
-frontend/OneSignalSDKWorker.js
-crawler.js
+# Dependencies
+/node_modules
+/.pnp
+.pnp.js
+
+# Firebase
+.firebase/
+database.rules.json
+storage.rules
+
+# Secret Files
 functions/.env
+firebase-key.json
