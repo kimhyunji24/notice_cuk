@@ -210,12 +210,15 @@ async function checkSite(siteId, url) {
         const postNumberText = numberElement.text().trim();
         const noticeType = isNaN(postNumberText) ? 'important' : 'general';
 
-        if (lastKnownPosts[siteId] && lastKnownPosts[siteId] !== articleNo) {
+        // --- 수정된 부분 ---
+        // 'lastKnownPosts[siteId]'가 존재하는지, 그리고 그 안의 'no' 속성과 비교
+        if (lastKnownPosts[siteId] && lastKnownPosts[siteId].no !== articleNo) {
             console.log(`🎉 [${siteId}] 새로운 게시물을 발견했습니다! (${noticeType})`);
             
             if (siteId !== 'catholic_notice' && noticeType === 'important') {
                 console.log(`-> [${siteId}] 학과 중요 공지이므로 알림을 보내지 않습니다.`);
-                lastKnownPosts[siteId] = articleNo;
+                // 알림은 안 보내도, 마지막 확인 정보는 업데이트해야 함
+                lastKnownPosts[siteId] = { no: articleNo, title: title };
                 return;
             }
 
@@ -228,11 +231,17 @@ async function checkSite(siteId, url) {
             };
             sendNotifications(newPost);
         }
-        lastKnownPosts[siteId] = articleNo;
+
+        // 마지막 확인된 게시물 정보를 '번호와 제목' 객체로 업데이트
+        lastKnownPosts[siteId] = { no: articleNo, title: title };
+        // --- 수정 끝 ---
+
     } catch (error) {
         console.error(`[${siteId}] 크롤링 중 에러 발생:`, error.message.substring(0, 100));
     }
-}function sendNotifications(postInfo) {
+}
+
+function sendNotifications(postInfo) {
     const sql = `SELECT user_id FROM subscriptions WHERE site_value = ? AND notice_type = ?`;
     db.all(sql, [postInfo.siteId, postInfo.type], (err, rows) => {
         if (err) {
