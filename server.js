@@ -128,52 +128,61 @@ app.post('/api/subscribe', (req, res) => {
 // 4. 크롤러 로직
 // ----------------------------------------------------------------
 const siteUrlMap = {
-    'dept_korean_language': 'https://korean.catholic.ac.kr/korean/community/notice.do',
-    'dept_philosophy': 'https://philosophy.catholic.ac.kr/philosophy/community/notice.do',
-    'dept_korean_history': 'https://koreanhistory.catholic.ac.kr/koreanhistory/community/notice.do',
-    'dept_english': 'https://english.catholic.ac.kr/english/community/notice.do',
-    'dept_chinese': 'https://cn.catholic.ac.kr/cn/community/notice.do',
-    'dept_japanese': 'https://japanese.catholic.ac.kr/japanese/major/notice.do',
-    'dept_french': 'https://french.catholic.ac.kr/french/community/notice.do',
-    'dept_social_welfare': 'https://socialwelfare.catholic.ac.kr/socialwelfare/community/notice.do',
-    'dept_psychology': 'https://psych.catholic.ac.kr/front/boardlist.do?bbsConfigFK=1043',
-    'dept_sociology': 'https://sociology.catholic.ac.kr/sociology/community/notice.do',
-    'dept_child_study': 'https://children.catholic.ac.kr/children/community/notice.do',
-    'dept_special_education': 'https://sped.catholic.ac.kr/sped/community/notice.do',
-    'dept_business': 'https://business.catholic.ac.kr/business/community/notice.do',
-    'dept_accounting': 'https://accounting.catholic.ac.kr/accounting/community/notice.do',
-    'dept_international': 'https://is.catholic.ac.kr/is/community/notice.do',
-    'dept_law': 'https://law.catholic.ac.kr/law/community/notice.do',
-    'dept_economics': 'https://economics.catholic.ac.kr/economics/community/notice.do',
-    'dept_public_admin': 'https://pa.catholic.ac.kr/pa/community/notice.do',
-    'dept_global_business': 'https://globalbiz.catholic.ac.kr/globalbiz/community/notice.do',
-    'dept_korean_culture': 'https://klc.catholic.ac.kr/klc/community/notice.do',
-    'dept_chemistry': 'https://chemistry.catholic.ac.kr/chemistry/community/notice.do',
-    'dept_mathematics': 'https://math.catholic.ac.kr/math/community/notice.do',
-    'dept_physics': 'https://physics.catholic.ac.kr/physics/community/notice.do',
-    'dept_spatial_consumer': 'https://design.catholic.ac.kr/design/community/notice.do',
-    'dept_clothing': 'https://clothing.catholic.ac.kr/clothing/community/notice.do',
-    'dept_food_nutrition': 'https://fn.catholic.ac.kr/fn/community/notice.do',
-    'dept_media_tech': 'https://mtc.catholic.ac.kr/mtc/community/notice.do',
-    'dept_computer_info': 'https://csie.catholic.ac.kr/csie/community/notice.do',
-    'dept_info_communication': 'https://ice.catholic.ac.kr/ice/community/notice.do',
-    'dept_biotech': 'https://biotech.catholic.ac.kr/biotech/community/notice.do',
-    'dept_energy_environment': 'https://envi.catholic.ac.kr/envi/community/notice.do',
-    'dept_biomedical_chem': 'https://bmce.catholic.ac.kr/bmce/community/notice.do',
-    'dept_ai': 'https://ai.catholic.ac.kr/ai/community/notice.do',
-    'dept_data_science': 'https://datascience.catholic.ac.kr/datascience/community/notice.do',
-    'dept_biomedical_sw': 'https://bmsw.catholic.ac.kr/bmsw/community/notice.do',
-    'dept_biomedical_life': 'https://mbs.catholic.ac.kr/mbs/community/notice.do',
-    'dept_music': 'https://music.catholic.ac.kr/music/community/notice.do',
-    'dept_vocal_foreign': 'https://voice.catholic.ac.kr/voice/community/notice.do',
-    'dept_liberal_arts': 'https://liberal.catholic.ac.kr/liberal/community/notice.do',
-    'dept_general_college': 'https://catholic-college.catholic.ac.kr/catholic_college/notification/notice.do',
-    'dept_convergence': 'https://major-convergence.catholic.ac.kr/major_convergence/notice/notice.do',
-    'dept_teacher': 'https://teaching.catholic.ac.kr/teaching/community/notice.do',
-    'dept_gbs': 'https://gbs.catholic.ac.kr/gbs/community/notice.do',
-    'dept_pharmacy': 'https://pharmacy.catholic.ac.kr/pharmacy/community/notice.do',
+    'dept_korean_language': 'https://korean.catholic.ac.kr/korean/community/notice.do', // 국어국문학과
+    'dept_philosophy': 'https://philosophy.catholic.ac.kr/philosophy/community/notice.do', // 철학과
+    'dept_korean_history': 'https://koreanhistory.catholic.ac.kr/koreanhistory/community/notice.do', // 국사학과
+    'dept_english': 'https://english.catholic.ac.kr/english/community/notice.do', // 영어영문학부
+    'dept_chinese': 'https://cn.catholic.ac.kr/cn/community/notice.do', // 중국언어문화학과
+    'dept_japanese': 'https://japanese.catholic.ac.kr/japanese/major/notice.do', // 일어일본문화학과
+    'dept_french': 'https://french.catholic.ac.kr/french/community/notice.do', // 프랑스어문화학과
+    'dept_social_welfare': 'https://socialwelfare.catholic.ac.kr/socialwelfare/community/notice.do', // 사회복지학과
+    'dept_psychology': 'https://psych.catholic.ac.kr/front/boardlist.do?bbsConfigFK=1043', // 심리학과
+    'dept_sociology': 'https://sociology.catholic.ac.kr/sociology/community/notice.do', // 사회학과
+    'dept_child_study': 'https://children.catholic.ac.kr/children/community/notice.do', // 아동학과
+    'dept_special_education': 'https://sped.catholic.ac.kr/sped/community/notice.do', // 특수교육과
+    'dept_business': 'https://business.catholic.ac.kr/business/community/notice.do', // 경영학과
+    'dept_accounting': 'https://accounting.catholic.ac.kr/accounting/community/notice.do', // 회계학과
+    'dept_international': 'https://is.catholic.ac.kr/is/community/notice.do', // 국제학부
+    'dept_law': 'https://law.catholic.ac.kr/law/community/notice.do', // 법학과
+    'dept_economics': 'https://economics.catholic.ac.kr/economics/community/notice.do', // 경제학과
+    'dept_public_admin': 'https://pa.catholic.ac.kr/pa/community/notice.do', // 행정학과
+    'dept_global_business': 'https://globalbiz.catholic.ac.kr/globalbiz/community/notice.do', // 글로벌경영학과
+    'dept_korean_culture': 'https://klc.catholic.ac.kr/klc/community/notice.do', // 한국어문화학과 (외국인 전담학과)
+
+    'dept_chemistry': 'https://chemistry.catholic.ac.kr/chemistry/community/notice.do', // 화학과
+    'dept_mathematics': 'https://math.catholic.ac.kr/math/community/notice.do', // 수학과
+    'dept_physics': 'https://physics.catholic.ac.kr/physics/community/notice.do', // 물리학과
+    'dept_spatial_consumer': 'https://design.catholic.ac.kr/design/community/notice.do', // 공간디자인/소비자학과
+    'dept_clothing': 'https://clothing.catholic.ac.kr/clothing/community/notice.do', // 의류학과
+    'dept_food_nutrition': 'https://fn.catholic.ac.kr/fn/community/notice.do', // 식품영양학과
+    'dept_media_tech': 'https://mtc.catholic.ac.kr/mtc/community/notice.do', // 미디어기술콘텐츠학과
+    'dept_computer_info': 'https://csie.catholic.ac.kr/csie/community/notice.do', // 컴퓨터정보공학부
+    'dept_info_communication': 'https://ice.catholic.ac.kr/ice/community/notice.do', // 정보통신전자공학부
+    'dept_biotech': 'https://biotech.catholic.ac.kr/biotech/community/notice.do', // 생명공학과
+    'dept_energy_environment': 'https://envi.catholic.ac.kr/envi/community/notice.do', // 에너지환경공학과
+    'dept_biomedical_chem': 'https://bmce.catholic.ac.kr/bmce/community/notice.do', // 바이오메디컬화학공학과
+    'dept_ai': 'https://ai.catholic.ac.kr/ai/community/notice.do', // 인공지능학과
+    'dept_data_science': 'https://datascience.catholic.ac.kr/datascience/community/notice.do', // 데이터사이언스학과
+    'dept_biomedical_sw': 'https://bmsw.catholic.ac.kr/bmsw/community/notice.do', // 바이오메디컬소프트웨어학과
+    'dept_biomedical_life': 'https://mbs.catholic.ac.kr/mbs/community/notice.do', // 의생명과학과
+
+    'dept_music': 'https://music.catholic.ac.kr/music/community/notice.do', // 음악과
+    'dept_vocal_foreign': 'https://voice.catholic.ac.kr/voice/community/notice.do', // 성악과(외국인 전담학과)
+    // 'dept_art_media': '', // 예술미디어융합학과
+
+    'dept_liberal_arts': 'https://liberal.catholic.ac.kr/liberal/community/notice.do', // 자유전공학부
+
+    'dept_general_college': 'https://catholic-college.catholic.ac.kr/catholic_college/notification/notice.do', // 학부대학
+    'dept_convergence': 'https://major-convergence.catholic.ac.kr/major_convergence/notice/notice.do', // 융합전공학부
+
+    'dept_teacher': 'https://teaching.catholic.ac.kr/teaching/community/notice.do', // 교직과
+    'dept_gbs': 'https://gbs.catholic.ac.kr/gbs/community/notice.do', // 글로벌 경영대학
+
+    'dept_pharmacy': 'https://pharmacy.catholic.ac.kr/pharmacy/community/notice.do', // 약학과
+
     'catholic_notice': 'https://www.catholic.ac.kr/ko/campuslife/notice.do'
 };
+
 let lastKnownPosts = {};
 
 async function checkSite(siteId, url) {
