@@ -43,7 +43,7 @@ async function subscribe() {
     };
 
     try {
-        const response = await fetch('http://localhost:3000/api/subscribe', {
+        const response = await fetch('https://gadaealrim.onrender.com/api/subscribe', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(dataToSend)

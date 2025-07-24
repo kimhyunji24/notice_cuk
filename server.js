@@ -67,9 +67,12 @@
 // ----------------------------------------------------------------
 const express = require('express');
 const cors = require('cors');
+
 const axios = require('axios');
 const cheerio = require('cheerio');
 const db = require('./database.js');
+require('dotenv').config();
+
 
 // ----------------------------------------------------------------
 // 2. Express 서버 설정
@@ -208,18 +211,46 @@ async function checkSite(siteId, url) {
     } catch (error) {
         console.error(`[${siteId}] 크롤링 중 에러 발생:`, error.message.substring(0, 100));
     }
-}
-
-function sendNotifications(postInfo) {
+}function sendNotifications(postInfo) {
     const sql = `SELECT user_id FROM subscriptions WHERE site_value = ? AND notice_type = ?`;
     db.all(sql, [postInfo.siteId, postInfo.type], (err, rows) => {
-        if (err || rows.length === 0) return;
+        if (err) {
+            console.error('DB 에러:', err.message);
+            return;
+        }
+        if (rows.length === 0) {
+            // 해당 공지를 수신할 구독자가 없으므로 조용히 종료
+            return;
+        }
 
-        const playerIds = rows.map(row => row.user_id);
-        console.log(`[${postInfo.title}] 관련 구독자 ${playerIds.length}명에게 알림 발송 시도.`);
+        const playerIds = rows.map(row => row.user_id); // 알림 보낼 사용자들의 playerId 목록
+        console.log(`[${postInfo.title}] 관련 구독자 ${playerIds.length}명에게 알림 발송을 시도합니다.`);
 
-        // TODO: 여기에 실제 OneSignal API 호출 코드를 넣으세요.
-        // axios.post('https://onesignal.com/api/v1/notifications', { ... });
+        // --- OneSignal API 호출 시작 ---
+        axios.post('https://onesignal.com/api/v1/notifications', {
+            // 1. 어떤 앱에서 보내는 알림인지 명시
+            app_id: process.env.ONESIGNAL_APP_ID,
+
+            // 2. 누구에게 보낼지 명시 (DB에서 가져온 playerId 목록)
+            include_player_ids: playerIds,
+
+            // 3. 알림 내용 구성
+            headings: { "en": `[${postInfo.siteId}] 새 글 알림` }, // 알림 제목
+            contents: { "en": postInfo.title }, // 알림 내용
+
+            // 4. 알림 클릭 시 이동할 페이지 주소
+            url: postInfo.link
+        }, {
+            // 5. 인증 정보 (권한)
+            headers: {
+                'Authorization': `Basic ${process.env.ONESIGNAL_API_KEY}` // process.env로 키 불러오기
+            }
+        }).then(response => {
+            console.log("✅ OneSignal API 발송 성공");
+        }).catch(error => {
+            console.error("❌ OneSignal API 발송 실패:", error.response ? error.response.data : error.message);
+        });
+        // --- OneSignal API 호출 끝 ---
     });
 }
 
@@ -235,7 +266,9 @@ function runAllChecks() {
 // 5. 서버 실행 및 크롤러 시작
 // ----------------------------------------------------------------
 app.listen(PORT, () => {
-    console.log(`✅ API 서버가 http://localhost:${PORT} 에서 실행 중입니다.`);
+    console.log(`✅ 서버가 내부 포트 ${PORT}에서 대기 중입니다.`);
+    console.log(`🚀 공개 주소: https://gadaealrim.onrender.com`);
+    
     runAllChecks();
     setInterval(runAllChecks, 600000); // 10분마다 실행
 });
