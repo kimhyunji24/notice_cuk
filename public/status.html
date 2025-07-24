@@ -63,6 +63,31 @@
                 document.getElementById('loading').textContent = '데이터를 불러오는 데 실패했습니다.';
             }
         };
+
+        
     </script>
+    <script type="module">
+  // Import the functions you need from the SDKs you need
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-app.js";
+  import { getAnalytics } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-analytics.js";
+  // TODO: Add SDKs for Firebase products that you want to use
+  // https://firebase.google.com/docs/web/setup#available-libraries
+
+  // Your web app's Firebase configuration
+  // For Firebase JS SDK v7.20.0 and later, measurementId is optional
+  const firebaseConfig = {
+    apiKey: "AIzaSyCN8QFbaBV9C5bYTG0e0Y-5mLlYw9OdpJU",
+    authDomain: "cuk-alarm-c7f09.firebaseapp.com",
+    projectId: "cuk-alarm-c7f09",
+    storageBucket: "cuk-alarm-c7f09.firebasestorage.app",
+    messagingSenderId: "984432791868",
+    appId: "1:984432791868:web:a46799f25aae0057660e39",
+    measurementId: "G-N9HB111ESG"
+  };
+
+  // Initialize Firebase
+  const app = initializeApp(firebaseConfig);
+  const analytics = getAnalytics(app);
+</script>
 </body>
 </html>
