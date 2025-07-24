@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>최신 글 확인 상태</title>
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background-color: #f4f4f9; color: #333; margin: 0; padding: 20px; }
+        .container { max-width: 800px; margin: 20px auto; background-color: white; padding: 20px 30px; border-radius: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+        h1 { text-align: center; color: #4a4a4a; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th, td { padding: 12px; text-align: left; border-bottom: 1px solid #ddd; }
+        th { background-color: #f8f9fa; }
+        td a { color: #007bff; text-decoration: none; }
+        td a:hover { text-decoration: underline; }
+        #loading { text-align: center; color: #888; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>최신 글 확인 상태 🛸</h1>
+        <table id="status-table">
+            <thead>
+                <tr>
+                    <th>사이트 별명</th>
+                    <th>마지막으로 확인된 글 제목</th>
+                </tr>
+            </thead>
+            <tbody id="status-body">
+                </tbody>
+        </table>
+        <p id="loading">데이터를 불러오는 중...</p>
+    </div>
+
+    <script>
+        // Render 서버의 /status API 주소
+        const statusApiUrl = 'https://gadaealrim.onrender.com/status';
+
+        // 페이지가 로드되면 API에서 데이터를 가져와 표를 채웁니다.
+        window.onload = async () => {
+            try {
+                const response = await fetch(statusApiUrl);
+                const data = await response.json();
+                
+                const tableBody = document.getElementById('status-body');
+                const loadingText = document.getElementById('loading');
+                
+                tableBody.innerHTML = ''; // 기존 내용 비우기
+
+                for (const siteId in data) {
+                    const post = data[siteId];
+                    const row = `
+                        <tr>
+                            <td>${siteId}</td>
+                            <td>${post.title} (글 번호: ${post.no})</td>
+                        </tr>
+                    `;
+                    tableBody.innerHTML += row;
+                }
+                loadingText.style.display = 'none'; // '로딩 중' 메시지 숨기기
+            } catch (error) {
+                console.error('상태 데이터 로딩 실패:', error);
+                document.getElementById('loading').textContent = '데이터를 불러오는 데 실패했습니다.';
+            }
+        };
+    </script>
+</body>
+</html>
