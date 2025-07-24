@@ -136,7 +136,7 @@ const siteUrlMap = {
     'dept_japanese': 'https://japanese.catholic.ac.kr/japanese/major/notice.do', // 일어일본문화학과
     'dept_french': 'https://french.catholic.ac.kr/french/community/notice.do', // 프랑스어문화학과
     'dept_social_welfare': 'https://socialwelfare.catholic.ac.kr/socialwelfare/community/notice.do', // 사회복지학과
-    'dept_psychology': 'https://psych.catholic.ac.kr/front/boardlist.do?bbsConfigFK=1043', // 심리학과
+    'dept_psychology': 'https://psych.catholic.ac.kr/psychology/community/notice.do', // 심리학과
     'dept_sociology': 'https://sociology.catholic.ac.kr/sociology/community/notice.do', // 사회학과
     'dept_child_study': 'https://children.catholic.ac.kr/children/community/notice.do', // 아동학과
     'dept_special_education': 'https://sped.catholic.ac.kr/sped/community/notice.do', // 특수교육과
