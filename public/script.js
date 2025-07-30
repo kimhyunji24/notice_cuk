@@ -9,7 +9,7 @@ const checkAllTypesButton = document.getElementById('check-all-types');
 window.OneSignal = window.OneSignal || [];
 OneSignal.push(function() {
     OneSignal.init({
-        appId: "여기에-발급받은-OneSignal-APP-ID-입력", // 본인의 App ID로 교체
+        appId: "0a6879a0-d45c-45ff-8ffd-da673baef262", // 본인의 App ID로 교체
     });
 });
 // ---------------------------------------------
@@ -24,9 +24,12 @@ checkAllTypesButton.addEventListener('click', () => {
 });
 
 // --- 함수들 ---
+
+
 async function subscribe() {
-    // OneSignal에서 사용자 ID(playerId) 가져오기
-    const playerId = await OneSignal.getUserId();
+    // 안정적인 방법으로 Player ID 가져오기
+    const playerId = await getPlayerId();
+
     if (!playerId) {
         alert('알림을 허용해주세요! 알림 허용 창이 차단되었거나, 아직 ID가 발급되지 않았습니다.');
         return;
@@ -48,12 +51,14 @@ async function subscribe() {
     };
 
     try {
-        const response = await fetch('https://gadaealrim.onrender.com/api/subscribe', {
+        // 여기가 바뀔 주소입니다.
+        // firebase deploy 후 터미널에 나오는 Function URL의 /api 부분을 붙여줍니다.
+        const response = await fetch('https://cuk-alarm-c7f09.a.run.app/subscribe', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(dataToSend)
         });
-        if (!response.ok) { // 응답이 성공적이지 않을 경우 에러 처리
+        if (!response.ok) {
             throw new Error(`서버 에러: ${response.status}`);
         }
         const result = await response.json();
@@ -63,6 +68,7 @@ async function subscribe() {
         alert('구독 요청 중 문제가 발생했습니다.');
     }
 }
+
 
 function updateSelectedList() {
     const siteLabels = getSelectedLabels(siteCheckboxes);

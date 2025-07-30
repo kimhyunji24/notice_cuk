@@ -1,9 +1,18 @@
-const functions = require("firebase-functions");
+// functions/index.js
+
+// Firebase Functions v2(버전2)에서 필요한 함수들을 가져옵니다.
+const { onRequest } = require("firebase-functions/v2/https");
+const { onSchedule } = require("firebase-functions/v2/scheduler");
+const { setGlobalOptions } = require("firebase-functions/v2");
+
 const admin = require("firebase-admin");
 const express = require("express");
 const cors = require("cors");
 const axios = require("axios");
 const cheerio = require("cheerio");
+
+// 모든 함수에 적용할 기본 설정을 지정합니다. (지역: 서울)
+setGlobalOptions({ region: "asia-northeast3" });
 
 // Firebase Admin SDK 초기화
 admin.initializeApp();
@@ -12,6 +21,7 @@ const db = admin.firestore();
 // --- 1. API 서버 (HTTP 함수) ---
 const app = express();
 app.use(cors({ origin: true })); // 모든 요청을 허용하도록 설정
+app.use(express.json()); // JSON 요청 본문을 파싱하기 위해 추가
 
 // '/status' 경로: 최신 글 상태를 보여주는 API
 app.get("/status", async (req, res) => {
@@ -44,7 +54,6 @@ app.post("/subscribe", async (req, res) => {
 
     try {
         const userSubscriptionsRef = db.collection("subscriptions").doc(playerId);
-        // Firestore에 사용자 구독 정보 저장 (기존 정보 덮어쓰기)
         await userSubscriptionsRef.set({
             sites: selectedSites,
             types: noticeTypes,
@@ -57,30 +66,66 @@ app.post("/subscribe", async (req, res) => {
     }
 });
 
-// Express 앱을 Cloud Function으로 내보내기
-// 이 함수는 'api'라는 이름으로 배포됩니다.
-exports.api = functions.region("asia-northeast3").https.onRequest(app);
+// Express 앱을 onRequest 함수를 사용해 내보냅니다.
+exports.api = onRequest(app);
 
 
 // --- 2. 크롤러 (스케줄링 함수) ---
 const siteUrlMap = {
-    // 여기에 이전에 사용하던 URL 주소록을 그대로 붙여넣으세요.
     'dept_korean_language': 'https://korean.catholic.ac.kr/korean/community/notice.do',
     'dept_philosophy': 'https://philosophy.catholic.ac.kr/philosophy/community/notice.do',
-    // ... 나머지 모든 학과 주소 ...
+    'dept_korean_history': 'https://koreanhistory.catholic.ac.kr/koreanhistory/community/notice.do',
+    'dept_english': 'https://english.catholic.ac.kr/english/community/notice.do',
+    'dept_chinese': 'https://cn.catholic.ac.kr/cn/community/notice.do',
+    'dept_japanese': 'https://japanese.catholic.ac.kr/japanese/major/notice.do',
+    'dept_french': 'https://french.catholic.ac.kr/french/community/notice.do',
+    'dept_social_welfare': 'https://socialwelfare.catholic.ac.kr/socialwelfare/community/notice.do',
+    'dept_psychology': 'https://psych.catholic.ac.kr/psychology/community/notice.do',
+    'dept_sociology': 'https://sociology.catholic.ac.kr/sociology/community/notice.do',
+    'dept_child_study': 'https://children.catholic.ac.kr/children/community/notice.do',
+    'dept_special_education': 'https://sped.catholic.ac.kr/sped/community/notice.do',
+    'dept_business': 'https://business.catholic.ac.kr/business/community/notice.do',
+    'dept_accounting': 'https://accounting.catholic.ac.kr/accounting/community/notice.do',
+    'dept_international': 'https://is.catholic.ac.kr/is/community/notice.do',
+    'dept_law': 'https://law.catholic.ac.kr/law/community/notice.do',
+    'dept_economics': 'https://economics.catholic.ac.kr/economics/community/notice.do',
+    'dept_public_admin': 'https://pa.catholic.ac.kr/pa/community/notice.do',
+    'dept_global_business': 'https://globalbiz.catholic.ac.kr/globalbiz/community/notice.do',
+    'dept_korean_culture': 'https://klc.catholic.ac.kr/klc/community/notice.do',
+    'dept_chemistry': 'https://chemistry.catholic.ac.kr/chemistry/community/notice.do',
+    'dept_mathematics': 'https://math.catholic.ac.kr/math/community/notice.do',
+    'dept_physics': 'https://physics.catholic.ac.kr/physics/community/notice.do',
+    'dept_spatial_consumer': 'https://design.catholic.ac.kr/design/community/notice.do',
+    'dept_clothing': 'https://clothing.catholic.ac.kr/clothing/community/notice.do',
+    'dept_food_nutrition': 'https://fn.catholic.ac.kr/fn/community/notice.do',
+    'dept_media_tech': 'https://mtc.catholic.ac.kr/mtc/community/notice.do',
+    'dept_computer_info': 'https://csie.catholic.ac.kr/csie/community/notice.do',
+    'dept_info_communication': 'https://ice.catholic.ac.kr/ice/community/notice.do',
+    'dept_biotech': 'https://biotech.catholic.ac.kr/biotech/community/notice.do',
+    'dept_energy_environment': 'https://envi.catholic.ac.kr/envi/community/notice.do',
+    'dept_biomedical_chem': 'https://bmce.catholic.ac.kr/bmce/community/notice.do',
+    'dept_ai': 'https://ai.catholic.ac.kr/ai/community/notice.do',
+    'dept_data_science': 'https://datascience.catholic.ac.kr/datascience/community/notice.do',
+    'dept_biomedical_sw': 'https://bmsw.catholic.ac.kr/bmsw/community/notice.do',
+    'dept_biomedical_life': 'https://mbs.catholic.ac.kr/mbs/community/notice.do',
+    'dept_music': 'https://music.catholic.ac.kr/music/community/notice.do',
+    'dept_vocal_foreign': 'https://voice.catholic.ac.kr/voice/community/notice.do',
+    'dept_liberal_arts': 'https://liberal.catholic.ac.kr/liberal/community/notice.do',
+    'dept_general_college': 'https://catholic-college.catholic.ac.kr/catholic_college/notification/notice.do',
+    'dept_convergence': 'https://major-convergence.catholic.ac.kr/major_convergence/notice/notice.do',
+    'dept_teacher': 'https://teaching.catholic.ac.kr/teaching/community/notice.do',
+    'dept_gbs': 'https://gbs.catholic.ac.kr/gbs/community/notice.do',
+    'dept_pharmacy': 'https://pharmacy.catholic.ac.kr/pharmacy/community/notice.do',
     'catholic_notice': 'https://www.catholic.ac.kr/ko/campuslife/notice.do'
 };
 
-// 10분마다 실행되도록 스케줄링
-exports.crawler = functions.region("asia-northeast3")
-    .pubsub.schedule("every 10 minutes")
-    .onRun(async (context) => {
-        console.log("모든 사이트의 새 글 확인을 시작합니다...");
-        for (const siteId in siteUrlMap) {
-            await checkSite(siteId, siteUrlMap[siteId]);
-        }
-        return null;
-    });
+exports.crawler = onSchedule("every 10 minutes", async (event) => {
+    console.log("모든 사이트의 새 글 확인을 시작합니다...");
+    for (const siteId in siteUrlMap) {
+        await checkSite(siteId, siteUrlMap[siteId]);
+    }
+    return null;
+});
 
 async function checkSite(siteId, url) {
     try {
@@ -121,6 +166,7 @@ async function checkSite(siteId, url) {
         console.error(`[${siteId}] 크롤링 중 에러 발생:`, error.message);
     }
 }
+
 async function sendNotifications(postInfo) {
     const snapshot = await db.collection("subscriptions")
         .where("sites", "array-contains", postInfo.siteId)
@@ -130,10 +176,8 @@ async function sendNotifications(postInfo) {
 
     const playerIds = snapshot.docs.map((doc) => doc.id);
 
-    // --- OneSignal API 호출 (process.env 사용) ---
     try {
         await axios.post('https://onesignal.com/api/v1/notifications', {
-            // process.env를 사용해 키를 불러옵니다.
             app_id: process.env.ONESIGNAL_APP_ID,
             include_player_ids: playerIds,
             headings: { "en": `[${postInfo.siteId}] 새 글 알림` },

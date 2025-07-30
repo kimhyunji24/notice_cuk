@@ -1,65 +1,236 @@
-[debug] [2025-07-24T08:17:36.001Z] ----------------------------------------------------------------------
-[debug] [2025-07-24T08:17:36.004Z] Command:       /opt/homebrew/Cellar/node/23.9.0/bin/node /usr/local/bin/firebase init functions
-[debug] [2025-07-24T08:17:36.004Z] CLI Version:   14.11.1
-[debug] [2025-07-24T08:17:36.005Z] Platform:      darwin
-[debug] [2025-07-24T08:17:36.005Z] Node Version:  v23.9.0
-[debug] [2025-07-24T08:17:36.005Z] Time:          Thu Jul 24 2025 17:17:36 GMT+0900 (대한민국 표준시)
-[debug] [2025-07-24T08:17:36.005Z] ----------------------------------------------------------------------
+[debug] [2025-07-30T08:36:38.785Z] ----------------------------------------------------------------------
+[debug] [2025-07-30T08:36:38.788Z] Command:       /opt/homebrew/Cellar/node/23.9.0/bin/node /usr/local/bin/firebase emulators:start
+[debug] [2025-07-30T08:36:38.788Z] CLI Version:   14.11.1
+[debug] [2025-07-30T08:36:38.788Z] Platform:      darwin
+[debug] [2025-07-30T08:36:38.788Z] Node Version:  v23.9.0
+[debug] [2025-07-30T08:36:38.789Z] Time:          Wed Jul 30 2025 17:36:38 GMT+0900 (대한민국 표준시)
+[debug] [2025-07-30T08:36:38.789Z] ----------------------------------------------------------------------
 [debug] 
-[debug] [2025-07-24T08:17:36.171Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
-[debug] [2025-07-24T08:17:36.172Z] > authorizing via signed-in user (hunyji34@gmail.com)
+[debug] [2025-07-30T08:36:38.953Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2025-07-30T08:36:38.953Z] > authorizing via signed-in user (hunyji34@gmail.com)
+[debug] [2025-07-30T08:36:39.004Z] openjdk version "23.0.2" 2025-01-21
+
+[debug] [2025-07-30T08:36:39.004Z] OpenJDK Runtime Environment Homebrew (build 23.0.2)
+OpenJDK 64-Bit Server VM Homebrew (build 23.0.2, mixed mode, sharing)
+
+[debug] [2025-07-30T08:36:39.008Z] Parsed Java major version: 23
+[info] i  emulators: Starting emulators: functions, firestore, hosting, extensions {"metadata":{"emulator":{"name":"hub"},"message":"Starting emulators: functions, firestore, hosting, extensions"}}
+[debug] [2025-07-30T08:36:39.009Z] Checked if tokens are valid: true, expires at: 1753867961593
+[debug] [2025-07-30T08:36:39.009Z] Checked if tokens are valid: true, expires at: 1753867961593
+[debug] [2025-07-30T08:36:39.010Z] >>> [apiv2][query] GET https://cloudresourcemanager.googleapis.com/v1/projects/cuk-alarm-c7f09 [none]
+[debug] [2025-07-30T08:36:39.831Z] <<< [apiv2][status] GET https://cloudresourcemanager.googleapis.com/v1/projects/cuk-alarm-c7f09 200
+[debug] [2025-07-30T08:36:39.831Z] <<< [apiv2][body] GET https://cloudresourcemanager.googleapis.com/v1/projects/cuk-alarm-c7f09 {"projectNumber":"984432791868","projectId":"cuk-alarm-c7f09","lifecycleState":"ACTIVE","name":"cuk-alarm","labels":{"firebase":"enabled","firebase-core":"disabled"},"createTime":"2025-07-24T05:53:43.085888Z"}
+[debug] [2025-07-30T08:36:40.727Z] [logging] Logging Emulator only supports listening on one address (127.0.0.1). Not listening on ::1
+[debug] [2025-07-30T08:36:40.727Z] [firestore] Firestore Emulator only supports listening on one address (127.0.0.1). Not listening on ::1
+[debug] [2025-07-30T08:36:40.727Z] [firestore.websocket] websocket server for firestore only supports listening on one address (127.0.0.1). Not listening on ::1
+[debug] [2025-07-30T08:36:40.727Z] [hosting] Hosting Emulator only supports listening on one address (127.0.0.1). Not listening on ::1
+[debug] [2025-07-30T08:36:40.727Z] assigned listening specs for emulators {"user":{"hub":[{"address":"127.0.0.1","family":"IPv4","port":4400},{"address":"::1","family":"IPv6","port":4400}],"ui":[{"address":"127.0.0.1","family":"IPv4","port":4000},{"address":"::1","family":"IPv6","port":4000}],"logging":[{"address":"127.0.0.1","family":"IPv4","port":4500}],"firestore":[{"address":"127.0.0.1","family":"IPv4","port":3241}],"firestore.websocket":[{"address":"127.0.0.1","family":"IPv4","port":9150}],"hosting":[{"address":"127.0.0.1","family":"IPv4","port":1230}]},"metadata":{"message":"assigned listening specs for emulators"}}
+[debug] [2025-07-30T08:36:40.731Z] [hub] writing locator at /var/folders/9w/xs296f7n5vz53sxjczfk6q9w0000gn/T/hub-cuk-alarm-c7f09.json
+[debug] [2025-07-30T08:36:40.734Z] [Extensions] Started Extensions emulator, this is a noop.
+[debug] [2025-07-30T08:36:41.173Z] [functions] Functions Emulator only supports listening on one address (127.0.0.1). Not listening on ::1
+[debug] [2025-07-30T08:36:41.173Z] [eventarc] Eventarc Emulator only supports listening on one address (127.0.0.1). Not listening on ::1
+[debug] [2025-07-30T08:36:41.173Z] [tasks] Cloud Tasks Emulator only supports listening on one address (127.0.0.1). Not listening on ::1
+[debug] [2025-07-30T08:36:41.173Z] late-assigned ports for functions and eventarc emulators {"user":{"hub":[{"address":"127.0.0.1","family":"IPv4","port":4400},{"address":"::1","family":"IPv6","port":4400}],"ui":[{"address":"127.0.0.1","family":"IPv4","port":4000},{"address":"::1","family":"IPv6","port":4000}],"logging":[{"address":"127.0.0.1","family":"IPv4","port":4500}],"firestore":[{"address":"127.0.0.1","family":"IPv4","port":3241}],"firestore.websocket":[{"address":"127.0.0.1","family":"IPv4","port":9150}],"hosting":[{"address":"127.0.0.1","family":"IPv4","port":1230}],"functions":[{"address":"127.0.0.1","family":"IPv4","port":8234}],"eventarc":[{"address":"127.0.0.1","family":"IPv4","port":9299}],"tasks":[{"address":"127.0.0.1","family":"IPv4","port":9499}]},"metadata":{"message":"late-assigned ports for functions and eventarc emulators"}}
+[warn] ⚠  functions: The following emulators are not running, calls to these services from the Functions emulator will affect production: apphosting, auth, database, pubsub, storage, dataconnect {"metadata":{"emulator":{"name":"functions"},"message":"The following emulators are not running, calls to these services from the Functions emulator will affect production: \u001b[1mapphosting, auth, database, pubsub, storage, dataconnect\u001b[22m"}}
+[debug] [2025-07-30T08:36:41.180Z] defaultcredentials: writing to file /Users/hyunji/.config/firebase/hunyji34_gmail_com_application_default_credentials.json
+[debug] [2025-07-30T08:36:41.184Z] Setting GAC to /Users/hyunji/.config/firebase/hunyji34_gmail_com_application_default_credentials.json {"metadata":{"emulator":{"name":"functions"},"message":"Setting GAC to /Users/hyunji/.config/firebase/hunyji34_gmail_com_application_default_credentials.json"}}
+[debug] [2025-07-30T08:36:41.184Z] Checked if tokens are valid: true, expires at: 1753867961593
+[debug] [2025-07-30T08:36:41.184Z] Checked if tokens are valid: true, expires at: 1753867961593
+[debug] [2025-07-30T08:36:41.184Z] >>> [apiv2][query] GET https://firebase.googleapis.com/v1beta1/projects/cuk-alarm-c7f09/adminSdkConfig [none]
+[debug] [2025-07-30T08:36:42.104Z] <<< [apiv2][status] GET https://firebase.googleapis.com/v1beta1/projects/cuk-alarm-c7f09/adminSdkConfig 200
+[debug] [2025-07-30T08:36:42.104Z] <<< [apiv2][body] GET https://firebase.googleapis.com/v1beta1/projects/cuk-alarm-c7f09/adminSdkConfig {"projectId":"cuk-alarm-c7f09","storageBucket":"cuk-alarm-c7f09.firebasestorage.app"}
+[warn] ⚠  firestore: Cloud Firestore Emulator does not support multiple databases yet. {"metadata":{"emulator":{"name":"firestore"},"message":"Cloud Firestore Emulator does not support multiple databases yet."}}
+[warn] ⚠  firestore: Did not find a Cloud Firestore rules file specified in a firebase.json config file. {"metadata":{"emulator":{"name":"firestore"},"message":"Did not find a Cloud Firestore rules file specified in a firebase.json config file."}}
+[warn] ⚠  firestore: The emulator will default to allowing all reads and writes. Learn more about this option: https://firebase.google.com/docs/emulator-suite/install_and_configure#security_rules_configuration. {"metadata":{"emulator":{"name":"firestore"},"message":"The emulator will default to allowing all reads and writes. Learn more about this option: https://firebase.google.com/docs/emulator-suite/install_and_configure#security_rules_configuration."}}
+[debug] [2025-07-30T08:36:42.123Z] Ignoring unsupported arg: auto_download {"metadata":{"emulator":{"name":"firestore"},"message":"Ignoring unsupported arg: auto_download"}}
+[debug] [2025-07-30T08:36:42.123Z] Ignoring unsupported arg: single_project_mode_error {"metadata":{"emulator":{"name":"firestore"},"message":"Ignoring unsupported arg: single_project_mode_error"}}
+[debug] [2025-07-30T08:36:42.123Z] Starting Firestore Emulator with command {"binary":"java","args":["-Dgoogle.cloud_firestore.debug_log_level=FINE","-Duser.language=en","-jar","/Users/hyunji/.cache/firebase/emulators/cloud-firestore-emulator-v1.19.8.jar","--host","127.0.0.1","--port",3241,"--websocket_port",9150,"--project_id","cuk-alarm-c7f09","--single_project_mode",true,"--functions_emulator","127.0.0.1:8234"],"optionalArgs":["port","webchannel_port","host","rules","websocket_port","functions_emulator","seed_from_export","project_id","single_project_mode"],"joinArgs":false,"shell":false,"port":3241} {"metadata":{"emulator":{"name":"firestore"},"message":"Starting Firestore Emulator with command {\"binary\":\"java\",\"args\":[\"-Dgoogle.cloud_firestore.debug_log_level=FINE\",\"-Duser.language=en\",\"-jar\",\"/Users/hyunji/.cache/firebase/emulators/cloud-firestore-emulator-v1.19.8.jar\",\"--host\",\"127.0.0.1\",\"--port\",3241,\"--websocket_port\",9150,\"--project_id\",\"cuk-alarm-c7f09\",\"--single_project_mode\",true,\"--functions_emulator\",\"127.0.0.1:8234\"],\"optionalArgs\":[\"port\",\"webchannel_port\",\"host\",\"rules\",\"websocket_port\",\"functions_emulator\",\"seed_from_export\",\"project_id\",\"single_project_mode\"],\"joinArgs\":false,\"shell\":false,\"port\":3241}"}}
+[info] i  firestore: Firestore Emulator logging to firestore-debug.log {"metadata":{"emulator":{"name":"firestore"},"message":"Firestore Emulator logging to \u001b[1mfirestore-debug.log\u001b[22m"}}
+[debug] [2025-07-30T08:36:43.139Z] Jul 30, 2025 5:36:43 PM com.google.cloud.datastore.emulator.firestore.websocket.WebSocketServer start
+INFO: Started WebSocket server on ws://127.0.0.1:9150
+ {"metadata":{"emulator":{"name":"firestore"},"message":"Jul 30, 2025 5:36:43 PM com.google.cloud.datastore.emulator.firestore.websocket.WebSocketServer start\nINFO: Started WebSocket server on ws://127.0.0.1:9150\n"}}
+[debug] [2025-07-30T08:36:43.158Z] API endpoint: http:// {"metadata":{"emulator":{"name":"firestore"},"message":"API endpoint: http://"}}
+[debug] [2025-07-30T08:36:43.158Z] 127.0.0.1:3241
+If you are using a library that supports the FIRESTORE_EMULATOR_HOST environment variable, run:
+
+   export FIRESTORE_EMULATOR_HOST=127.0.0.1:3241
+
+If you are running a Firestore in Datastore Mode project, run:
+
+   export DATASTORE_EMULATOR_HOST=127.0.0.1:3241
+
+Note: Support for Datastore Mode is in preview. If you encounter any bugs please file at https://github.com/firebase/firebase-tools/issues.
+Dev App Server is now running.
+
+ {"metadata":{"emulator":{"name":"firestore"},"message":"127.0.0.1:3241\nIf you are using a library that supports the FIRESTORE_EMULATOR_HOST environment variable, run:\n\n   export FIRESTORE_EMULATOR_HOST=127.0.0.1:3241\n\nIf you are running a Firestore in Datastore Mode project, run:\n\n   export DATASTORE_EMULATOR_HOST=127.0.0.1:3241\n\nNote: Support for Datastore Mode is in preview. If you encounter any bugs please file at https://github.com/firebase/firebase-tools/issues.\nDev App Server is now running.\n\n"}}
+[info] ✔  firestore: Firestore Emulator UI websocket is running on 9150. {"metadata":{"emulator":{"name":"firestore"},"message":"Firestore Emulator UI websocket is running on 9150."}}
+[debug] [2025-07-30T08:36:43.338Z] Checked if tokens are valid: true, expires at: 1753867961593
+[debug] [2025-07-30T08:36:43.338Z] Checked if tokens are valid: true, expires at: 1753867961593
+[debug] [2025-07-30T08:36:43.338Z] >>> [apiv2][query] GET https://firebasehosting.googleapis.com/v1beta1/projects/cuk-alarm-c7f09/sites 
+[debug] [2025-07-30T08:36:44.496Z] <<< [apiv2][status] GET https://firebasehosting.googleapis.com/v1beta1/projects/cuk-alarm-c7f09/sites 200
+[debug] [2025-07-30T08:36:44.497Z] <<< [apiv2][body] GET https://firebasehosting.googleapis.com/v1beta1/projects/cuk-alarm-c7f09/sites {"sites":[{"name":"projects/cuk-alarm-c7f09/sites/cuk-alarm","defaultUrl":"https://cuk-alarm.web.app","appId":"1:984432791868:web:a46799f25aae0057660e39","type":"USER_SITE"},{"name":"projects/cuk-alarm-c7f09/sites/cuk-alarm-c7f09","defaultUrl":"https://cuk-alarm-c7f09.web.app","type":"DEFAULT_SITE"}]}
+[debug] [2025-07-30T08:36:44.497Z] Checked if tokens are valid: true, expires at: 1753867961593
+[debug] [2025-07-30T08:36:44.497Z] Checked if tokens are valid: true, expires at: 1753867961593
+[debug] [2025-07-30T08:36:44.497Z] >>> [apiv2][query] GET https://firebase.googleapis.com/v1beta1/projects/cuk-alarm-c7f09/webApps/-/config [none]
+[debug] [2025-07-30T08:36:45.019Z] <<< [apiv2][status] GET https://firebase.googleapis.com/v1beta1/projects/cuk-alarm-c7f09/webApps/-/config 200
+[debug] [2025-07-30T08:36:45.019Z] <<< [apiv2][body] GET https://firebase.googleapis.com/v1beta1/projects/cuk-alarm-c7f09/webApps/-/config {"projectId":"cuk-alarm-c7f09","appId":"1:984432791868:web:a46799f25aae0057660e39","storageBucket":"cuk-alarm-c7f09.firebasestorage.app","apiKey":"AIzaSyCN8QFbaBV9C5bYTG0e0Y-5mLlYw9OdpJU","authDomain":"cuk-alarm-c7f09.firebaseapp.com","messagingSenderId":"984432791868","measurementId":"G-N9HB111ESG"}
+[debug] [2025-07-30T08:36:45.028Z] Checked if tokens are valid: true, expires at: 1753867961593
+[debug] [2025-07-30T08:36:45.029Z] Checked if tokens are valid: true, expires at: 1753867961593
+[debug] [2025-07-30T08:36:45.029Z] >>> [apiv2][query] GET https://firebase.googleapis.com/v1beta1/projects/cuk-alarm-c7f09 [none]
+[debug] [2025-07-30T08:36:45.559Z] <<< [apiv2][status] GET https://firebase.googleapis.com/v1beta1/projects/cuk-alarm-c7f09 200
+[debug] [2025-07-30T08:36:45.560Z] <<< [apiv2][body] GET https://firebase.googleapis.com/v1beta1/projects/cuk-alarm-c7f09 {"projectId":"cuk-alarm-c7f09","projectNumber":"984432791868","displayName":"cuk-alarm","name":"projects/cuk-alarm-c7f09","resources":{"hostingSite":"cuk-alarm-c7f09"},"state":"ACTIVE","etag":"1_191f34b4-26ba-45c1-a102-ebe97d77212a"}
+[info] i  hosting[cuk-alarm]: Serving hosting files from: public {"metadata":{"emulator":{"name":"hosting"},"message":"Serving hosting files from: \u001b[1mpublic\u001b[22m"}}
+[info] ✔  hosting[cuk-alarm]: Local server: http://127.0.0.1:1230 {"metadata":{"emulator":{"name":"hosting"},"message":"Local server: \u001b[4m\u001b[1mhttp://127.0.0.1:1230\u001b[22m\u001b[24m"}}
+[debug] [2025-07-30T08:36:45.662Z] [Extensions] Connecting Extensions emulator, this is a noop.
+[info] i  functions: Watching "/Users/hyunji/Desktop/notice_cuk/notice_cuk/functions" for Cloud Functions... {"metadata":{"emulator":{"name":"functions"},"message":"Watching \"/Users/hyunji/Desktop/notice_cuk/notice_cuk/functions\" for Cloud Functions..."}}
+[debug] [2025-07-30T08:36:45.666Z] Validating nodejs source
+[debug] [2025-07-30T08:36:46.238Z] > [functions] package.json contents: {
+  "name": "functions",
+  "description": "Cloud Functions for Firebase",
+  "scripts": {
+    "lint": "eslint .",
+    "serve": "firebase emulators:start --only functions",
+    "shell": "firebase functions:shell",
+    "start": "npm run shell",
+    "deploy": "firebase deploy --only functions",
+    "logs": "firebase functions:log"
+  },
+  "engines": {
+    "node": "22"
+  },
+  "main": "index.js",
+  "dependencies": {
+    "axios": "^1.11.0",
+    "cheerio": "^1.1.2",
+    "cors": "^2.8.5",
+    "express": "^5.1.0",
+    "firebase-admin": "^12.7.0",
+    "firebase-functions": "^6.0.1"
+  },
+  "devDependencies": {
+    "eslint": "^8.15.0",
+    "eslint-config-google": "^0.14.0",
+    "firebase-functions-test": "^3.1.0"
+  },
+  "private": true
+}
+[debug] [2025-07-30T08:36:46.238Z] Building nodejs source
+[debug] [2025-07-30T08:36:46.238Z] Failed to find version of module node: reached end of search path /Users/hyunji/Desktop/notice_cuk/notice_cuk/functions/node_modules
+[warn] ⚠  functions: Your requested "node" version "22" doesn't match your global version "23". Using node@23 from host. 
+[info] i  functions: Loaded environment variables from .env. 
+[debug] [2025-07-30T08:36:46.241Z] Could not find functions.yaml. Must use http discovery
+[debug] [2025-07-30T08:36:46.247Z] Found firebase-functions binary at '/Users/hyunji/Desktop/notice_cuk/notice_cuk/functions/node_modules/.bin/firebase-functions'
+[info] Serving at port 8109
+
+[debug] [2025-07-30T08:36:46.937Z] Got response from /__/functions.yaml {"endpoints":{"api":{"availableMemoryMb":null,"timeoutSeconds":null,"minInstances":null,"maxInstances":null,"ingressSettings":null,"concurrency":null,"serviceAccountEmail":null,"vpc":null,"platform":"gcfv2","region":["asia-northeast3"],"labels":{},"httpsTrigger":{},"entryPoint":"api"},"crawler":{"availableMemoryMb":null,"timeoutSeconds":null,"minInstances":null,"maxInstances":null,"ingressSettings":null,"concurrency":null,"serviceAccountEmail":null,"vpc":null,"platform":"gcfv2","region":["asia-northeast3"],"labels":{},"scheduleTrigger":{"schedule":"every 10 minutes","retryConfig":{"retryCount":null,"maxDoublings":null,"maxRetrySeconds":null,"minBackoffSeconds":null,"maxBackoffSeconds":null},"timeZone":null},"entryPoint":"crawler"}},"specVersion":"v1alpha1","requiredAPIs":[{"api":"cloudscheduler.googleapis.com","reason":"Needed for scheduled functions."}],"extensions":{}}
+[debug] [2025-07-30T08:36:50.960Z] defaultcredentials: writing to file /Users/hyunji/.config/firebase/hunyji34_gmail_com_application_default_credentials.json
+[debug] [2025-07-30T08:36:50.961Z] Setting GAC to /Users/hyunji/.config/firebase/hunyji34_gmail_com_application_default_credentials.json {"metadata":{"emulator":{"name":"functions"},"message":"Setting GAC to /Users/hyunji/.config/firebase/hunyji34_gmail_com_application_default_credentials.json"}}
+[info] ✔  functions: Loaded functions definitions from source: api, crawler. {"metadata":{"emulator":{"name":"functions"},"message":"Loaded functions definitions from source: api, crawler."}}
+[info] ✔  functions[asia-northeast3-api]: http function initialized (http://127.0.0.1:8234/cuk-alarm-c7f09/asia-northeast3/api). {"metadata":{"emulator":{"name":"functions"},"message":"\u001b[1mhttp\u001b[22m function initialized (http://127.0.0.1:8234/cuk-alarm-c7f09/asia-northeast3/api)."}}
+[info] i  functions[asia-northeast3-crawler]: function ignored because the pubsub emulator does not exist or is not running. {"metadata":{"emulator":{"name":"functions"},"message":"function ignored because the pubsub emulator does not exist or is not running."}}
+[debug] [2025-07-30T08:36:50.968Z] Could not find VSCode notification endpoint: FetchError: request to http://localhost:40001/vscode/notify failed, reason: . If you are not running the Firebase Data Connect VSCode extension, this is expected and not an issue.
 [info] 
-     ######## #### ########  ######## ########     ###     ######  ########
-     ##        ##  ##     ## ##       ##     ##  ##   ##  ##       ##
-     ######    ##  ########  ######   ########  #########  ######  ######
-     ##        ##  ##    ##  ##       ##     ## ##     ##       ## ##
-     ##       #### ##     ## ######## ########  ##     ##  ######  ########
+┌─────────────────────────────────────────────────────────────┐
+│ ✔  All emulators ready! It is now safe to connect your app. │
+│ i  View Emulator UI at http://127.0.0.1:4000/               │
+└─────────────────────────────────────────────────────────────┘
 
-You're about to initialize a Firebase project in this directory:
+┌────────────┬────────────────┬──────────────────────────────────┐
+│ Emulator   │ Host:Port      │ View in Emulator UI              │
+├────────────┼────────────────┼──────────────────────────────────┤
+│ Functions  │ 127.0.0.1:8234 │ http://127.0.0.1:4000/functions  │
+├────────────┼────────────────┼──────────────────────────────────┤
+│ Firestore  │ 127.0.0.1:3241 │ http://127.0.0.1:4000/firestore  │
+├────────────┼────────────────┼──────────────────────────────────┤
+│ Hosting    │ 127.0.0.1:1230 │ n/a                              │
+├────────────┼────────────────┼──────────────────────────────────┤
+│ Extensions │ 127.0.0.1:8234 │ http://127.0.0.1:4000/extensions │
+└────────────┴────────────────┴──────────────────────────────────┘
+  Emulator Hub host: 127.0.0.1 port: 4400
+  Other reserved ports: 4500, 9150
+┌─────────────────────────┬───────────────┬─────────────────────┐
+│ Extension Instance Name │ Extension Ref │ View in Emulator UI │
+└─────────────────────────┴───────────────┴─────────────────────┘
+Issues? Report them at https://github.com/firebase/firebase-tools/issues and attach the *-debug.log files.
+ 
+[debug] [2025-07-30T08:36:58.665Z] Jul 30, 2025 5:36:58 PM com.google.cloud.datastore.emulator.firestore.websocket.WebSocketChannelHandler initChannel
+INFO: Connected to new websocket client
+ {"metadata":{"emulator":{"name":"firestore"},"message":"Jul 30, 2025 5:36:58 PM com.google.cloud.datastore.emulator.firestore.websocket.WebSocketChannelHandler initChannel\nINFO: Connected to new websocket client\n"}}
+[debug] [2025-07-30T08:37:07.764Z] Jul 30, 2025 5:37:07 PM com.google.cloud.datastore.emulator.firestore.websocket.WebSocketChannelHandler initChannel
+INFO: Connected to new websocket client
+ {"metadata":{"emulator":{"name":"firestore"},"message":"Jul 30, 2025 5:37:07 PM com.google.cloud.datastore.emulator.firestore.websocket.WebSocketChannelHandler initChannel\nINFO: Connected to new websocket client\n"}}
+[debug] [2025-07-30T08:37:11.495Z] Jul 30, 2025 5:37:11 PM com.google.cloud.datastore.emulator.firestore.websocket.WebSocketChannelHandler initChannel
+INFO: Connected to new websocket client
+ {"metadata":{"emulator":{"name":"firestore"},"message":"Jul 30, 2025 5:37:11 PM com.google.cloud.datastore.emulator.firestore.websocket.WebSocketChannelHandler initChannel\nINFO: Connected to new websocket client\n"}}
+[debug] [2025-07-30T08:37:11.569Z] Jul 30, 2025 5:37:11 PM io.gapi.emulators.netty.HttpVersionRoutingHandler channelRead
+INFO: Detected non-HTTP/2 connection.
+ {"metadata":{"emulator":{"name":"firestore"},"message":"Jul 30, 2025 5:37:11 PM io.gapi.emulators.netty.HttpVersionRoutingHandler channelRead\nINFO: Detected non-HTTP/2 connection.\n"}}
+[debug] [2025-07-30T08:37:11.712Z] Jul 30, 2025 5:37:11 PM io.gapi.emulators.netty.HttpVersionRoutingHandler channelRead
+INFO: Detected HTTP/2 connection.
+ {"metadata":{"emulator":{"name":"firestore"},"message":"Jul 30, 2025 5:37:11 PM io.gapi.emulators.netty.HttpVersionRoutingHandler channelRead\nINFO: Detected HTTP/2 connection.\n"}}
+[debug] [2025-07-30T08:37:16.379Z] Jul 30, 2025 5:37:16 PM com.google.cloud.datastore.emulator.firestore.websocket.WebSocketChannelHandler initChannel
+INFO: Connected to new websocket client
+ {"metadata":{"emulator":{"name":"firestore"},"message":"Jul 30, 2025 5:37:16 PM com.google.cloud.datastore.emulator.firestore.websocket.WebSocketChannelHandler initChannel\nINFO: Connected to new websocket client\n"}}
+[debug] [2025-07-30T08:37:24.405Z] Jul 30, 2025 5:37:24 PM com.google.cloud.datastore.emulator.firestore.websocket.WebSocketChannelHandler channelClosed
+INFO: Websocket client disconnected
+ {"metadata":{"emulator":{"name":"firestore"},"message":"Jul 30, 2025 5:37:24 PM com.google.cloud.datastore.emulator.firestore.websocket.WebSocketChannelHandler channelClosed\nINFO: Websocket client disconnected\n"}}
+[debug] [2025-07-30T08:37:29.597Z] Jul 30, 2025 5:37:29 PM com.google.cloud.datastore.emulator.firestore.websocket.WebSocketChannelHandler initChannel
+INFO: Connected to new websocket client
+ {"metadata":{"emulator":{"name":"firestore"},"message":"Jul 30, 2025 5:37:29 PM com.google.cloud.datastore.emulator.firestore.websocket.WebSocketChannelHandler initChannel\nINFO: Connected to new websocket client\n"}}
+[debug] [2025-07-30T08:37:58.695Z] Jul 30, 2025 5:37:58 PM io.netty.channel.DefaultChannelPipeline onUnhandledInboundException
+WARNING: An exceptionCaught() event was fired, and it reached at the tail of the pipeline. It usually means the last handler in the pipeline did not handle the exception.
+java.net.SocketException: Connection reset
+	at java.base/sun.nio.ch.SocketChannelImpl.throwConnectionReset(SocketChannelImpl.java:403)
+	at java.base/sun.nio.ch.SocketChannelImpl.implRead(SocketChannelImpl.java:435)
+	at java.base/sun.nio.ch.SocketChannelImpl.read(SocketChannelImpl.java:493)
+	at io.netty.buffer.PooledByteBuf.setBytes(PooledByteBuf.java:255)
+	at io.netty.buffer.AbstractByteBuf.writeBytes(AbstractByteBuf.java:1132)
+	at io.netty.channel.socket.nio.NioSocketChannel.doReadBytes(NioSocketChannel.java:356)
+	at io.netty.channel.nio.AbstractNioByteChannel$NioByteUnsafe.read(AbstractNioByteChannel.java:151)
+	at io.netty.channel.nio.NioEventLoop.processSelectedKey(NioEventLoop.java:788)
+	at io.netty.channel.nio.NioEventLoop.processSelectedKeysOptimized(NioEventLoop.java:724)
+	at io.netty.channel.nio.NioEventLoop.processSelectedKeys(NioEventLoop.java:650)
+	at io.netty.channel.nio.NioEventLoop.run(NioEventLoop.java:562)
+	at io.netty.util.concurrent.SingleThreadEventExecutor$4.run(SingleThreadEventExecutor.java:994)
+	at io.netty.util.internal.ThreadExecutorMap$2.run(ThreadExecutorMap.java:74)
+	at io.netty.util.concurrent.FastThreadLocalRunnable.run(FastThreadLocalRunnable.java:30)
+	at java.base/java.lang.Thread.run(Thread.java:1575)
 
-  /Users/hyunji/Desktop/notice_cuk/notice_cuk
+ {"metadata":{"emulator":{"name":"firestore"},"message":"Jul 30, 2025 5:37:58 PM io.netty.channel.DefaultChannelPipeline onUnhandledInboundException\nWARNING: An exceptionCaught() event was fired, and it reached at the tail of the pipeline. It usually means the last handler in the pipeline did not handle the exception.\njava.net.SocketException: Connection reset\n\tat java.base/sun.nio.ch.SocketChannelImpl.throwConnectionReset(SocketChannelImpl.java:403)\n\tat java.base/sun.nio.ch.SocketChannelImpl.implRead(SocketChannelImpl.java:435)\n\tat java.base/sun.nio.ch.SocketChannelImpl.read(SocketChannelImpl.java:493)\n\tat io.netty.buffer.PooledByteBuf.setBytes(PooledByteBuf.java:255)\n\tat io.netty.buffer.AbstractByteBuf.writeBytes(AbstractByteBuf.java:1132)\n\tat io.netty.channel.socket.nio.NioSocketChannel.doReadBytes(NioSocketChannel.java:356)\n\tat io.netty.channel.nio.AbstractNioByteChannel$NioByteUnsafe.read(AbstractNioByteChannel.java:151)\n\tat io.netty.channel.nio.NioEventLoop.processSelectedKey(NioEventLoop.java:788)\n\tat io.netty.channel.nio.NioEventLoop.processSelectedKeysOptimized(NioEventLoop.java:724)\n\tat io.netty.channel.nio.NioEventLoop.processSelectedKeys(NioEventLoop.java:650)\n\tat io.netty.channel.nio.NioEventLoop.run(NioEventLoop.java:562)\n\tat io.netty.util.concurrent.SingleThreadEventExecutor$4.run(SingleThreadEventExecutor.java:994)\n\tat io.netty.util.internal.ThreadExecutorMap$2.run(ThreadExecutorMap.java:74)\n\tat io.netty.util.concurrent.FastThreadLocalRunnable.run(FastThreadLocalRunnable.java:30)\n\tat java.base/java.lang.Thread.run(Thread.java:1575)\n\n"}}
+[info] i  hosting: 127.0.0.1 - - [30/Jul/2025:08:40:32 +0000] "GET / HTTP/1.1" 200 - "-" "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.5 Safari/605.1.15" {"metadata":{"emulator":{"name":"hosting"},"message":"127.0.0.1 - - [30/Jul/2025:08:40:32 +0000] \"GET / HTTP/1.1\" 200 - \"-\" \"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.5 Safari/605.1.15\""}}
+[info] i  hosting: 127.0.0.1 - - [30/Jul/2025:08:40:32 +0000] "GET /script.js HTTP/1.1" 200 - "http://127.0.0.1:1230/" "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.5 Safari/605.1.15" {"metadata":{"emulator":{"name":"hosting"},"message":"127.0.0.1 - - [30/Jul/2025:08:40:32 +0000] \"GET /script.js HTTP/1.1\" 200 - \"http://127.0.0.1:1230/\" \"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.5 Safari/605.1.15\""}}
+[info] i  hosting: 127.0.0.1 - - [30/Jul/2025:08:40:32 +0000] "GET /style.css HTTP/1.1" 200 - "http://127.0.0.1:1230/" "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.5 Safari/605.1.15" {"metadata":{"emulator":{"name":"hosting"},"message":"127.0.0.1 - - [30/Jul/2025:08:40:32 +0000] \"GET /style.css HTTP/1.1\" 200 - \"http://127.0.0.1:1230/\" \"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.5 Safari/605.1.15\""}}
+[info] i  hosting: 127.0.0.1 - - [30/Jul/2025:08:40:33 +0000] "GET /favicon.ico HTTP/1.1" 404 150 "http://127.0.0.1:1230/" "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.5 Safari/605.1.15" {"metadata":{"emulator":{"name":"hosting"},"message":"127.0.0.1 - - [30/Jul/2025:08:40:33 +0000] \"GET /favicon.ico HTTP/1.1\" 404 150 \"http://127.0.0.1:1230/\" \"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.5 Safari/605.1.15\""}}
+[info] i  hosting: 127.0.0.1 - - [30/Jul/2025:08:44:36 +0000] "GET / HTTP/1.1" 200 - "-" "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.5 Safari/605.1.15" {"metadata":{"emulator":{"name":"hosting"},"message":"127.0.0.1 - - [30/Jul/2025:08:44:36 +0000] \"GET / HTTP/1.1\" 200 - \"-\" \"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.5 Safari/605.1.15\""}}
+[info] i  hosting: 127.0.0.1 - - [30/Jul/2025:08:44:36 +0000] "GET /script.js HTTP/1.1" 200 - "http://127.0.0.1:1230/" "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.5 Safari/605.1.15" {"metadata":{"emulator":{"name":"hosting"},"message":"127.0.0.1 - - [30/Jul/2025:08:44:36 +0000] \"GET /script.js HTTP/1.1\" 200 - \"http://127.0.0.1:1230/\" \"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.5 Safari/605.1.15\""}}
+[info] i  hosting: 127.0.0.1 - - [30/Jul/2025:08:44:38 +0000] "GET / HTTP/1.1" 200 - "-" "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.5 Safari/605.1.15" {"metadata":{"emulator":{"name":"hosting"},"message":"127.0.0.1 - - [30/Jul/2025:08:44:38 +0000] \"GET / HTTP/1.1\" 200 - \"-\" \"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.5 Safari/605.1.15\""}}
+[info] i  hosting: 127.0.0.1 - - [30/Jul/2025:08:44:38 +0000] "GET /script.js HTTP/1.1" 200 - "http://127.0.0.1:1230/" "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.5 Safari/605.1.15" {"metadata":{"emulator":{"name":"hosting"},"message":"127.0.0.1 - - [30/Jul/2025:08:44:38 +0000] \"GET /script.js HTTP/1.1\" 200 - \"http://127.0.0.1:1230/\" \"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.5 Safari/605.1.15\""}}
+[debug] [2025-07-30T08:45:14.884Z] Jul 30, 2025 5:45:14 PM com.google.cloud.datastore.emulator.firestore.websocket.WebSocketChannelHandler initChannel
+INFO: Connected to new websocket client
+ {"metadata":{"emulator":{"name":"firestore"},"message":"Jul 30, 2025 5:45:14 PM com.google.cloud.datastore.emulator.firestore.websocket.WebSocketChannelHandler initChannel\nINFO: Connected to new websocket client\n"}}
+[debug] [2025-07-30T08:45:14.935Z] Jul 30, 2025 5:45:14 PM io.gapi.emulators.netty.HttpVersionRoutingHandler channelRead
+INFO: Detected non-HTTP/2 connection.
+ {"metadata":{"emulator":{"name":"firestore"},"message":"Jul 30, 2025 5:45:14 PM io.gapi.emulators.netty.HttpVersionRoutingHandler channelRead\nINFO: Detected non-HTTP/2 connection.\n"}}
+[info] i  hosting: 127.0.0.1 - - [30/Jul/2025:08:45:16 +0000] "GET / HTTP/1.1" 200 - "-" "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.5 Safari/605.1.15" {"metadata":{"emulator":{"name":"hosting"},"message":"127.0.0.1 - - [30/Jul/2025:08:45:16 +0000] \"GET / HTTP/1.1\" 200 - \"-\" \"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.5 Safari/605.1.15\""}}
+[info] i  hosting: 127.0.0.1 - - [30/Jul/2025:08:45:16 +0000] "GET /script.js HTTP/1.1" 200 - "http://127.0.0.1:1230/" "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.5 Safari/605.1.15" {"metadata":{"emulator":{"name":"hosting"},"message":"127.0.0.1 - - [30/Jul/2025:08:45:16 +0000] \"GET /script.js HTTP/1.1\" 200 - \"http://127.0.0.1:1230/\" \"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.5 Safari/605.1.15\""}}
+[info] i  hosting: 127.0.0.1 - - [30/Jul/2025:08:45:17 +0000] "GET / HTTP/1.1" 200 - "-" "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.5 Safari/605.1.15" {"metadata":{"emulator":{"name":"hosting"},"message":"127.0.0.1 - - [30/Jul/2025:08:45:17 +0000] \"GET / HTTP/1.1\" 200 - \"-\" \"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.5 Safari/605.1.15\""}}
+[debug] [2025-07-30T08:45:43.986Z] Jul 30, 2025 5:45:43 PM io.netty.channel.DefaultChannelPipeline onUnhandledInboundException
+WARNING: An exceptionCaught() event was fired, and it reached at the tail of the pipeline. It usually means the last handler in the pipeline did not handle the exception.
+java.net.SocketException: Connection reset
+	at java.base/sun.nio.ch.SocketChannelImpl.throwConnectionReset(SocketChannelImpl.java:403)
+	at java.base/sun.nio.ch.SocketChannelImpl.implRead(SocketChannelImpl.java:435)
+	at java.base/sun.nio.ch.SocketChannelImpl.read(SocketChannelImpl.java:493)
+	at io.netty.buffer.PooledByteBuf.setBytes(PooledByteBuf.java:255)
+	at io.netty.buffer.AbstractByteBuf.writeBytes(AbstractByteBuf.java:1132)
+	at io.netty.channel.socket.nio.NioSocketChannel.doReadBytes(NioSocketChannel.java:356)
+	at io.netty.channel.nio.AbstractNioByteChannel$NioByteUnsafe.read(AbstractNioByteChannel.java:151)
+	at io.netty.channel.nio.NioEventLoop.processSelectedKey(NioEventLoop.java:788)
+	at io.netty.channel.nio.NioEventLoop.processSelectedKeysOptimized(NioEventLoop.java:724)
+	at io.netty.channel.nio.NioEventLoop.processSelectedKeys(NioEventLoop.java:650)
+	at io.netty.channel.nio.NioEventLoop.run(NioEventLoop.java:562)
+	at io.netty.util.concurrent.SingleThreadEventExecutor$4.run(SingleThreadEventExecutor.java:994)
+	at io.netty.util.internal.ThreadExecutorMap$2.run(ThreadExecutorMap.java:74)
+	at io.netty.util.concurrent.FastThreadLocalRunnable.run(FastThreadLocalRunnable.java:30)
+	at java.base/java.lang.Thread.run(Thread.java:1575)
 
-Before we get started, keep in mind:
-
-  * You are initializing within an existing Firebase project directory
-
-[info] 
-=== Project Setup
-[info] 
-[info] First, let's associate this project directory with a Firebase project.
-[info] You can create multiple project aliases by running firebase use --add, 
-[info] but for now we'll just set up a default project.
-[info] 
-[debug] [2025-07-24T08:17:36.175Z] Using project from CLI flag: cuk-alarm-c7f09
-[debug] [2025-07-24T08:17:36.175Z] Checked if tokens are valid: false, expires at: 1753343795439
-[debug] [2025-07-24T08:17:36.175Z] Checked if tokens are valid: false, expires at: 1753343795439
-[debug] [2025-07-24T08:17:36.176Z] > refreshing access token with scopes: []
-[debug] [2025-07-24T08:17:36.178Z] >>> [apiv2][query] POST https://www.googleapis.com/oauth2/v3/token [none]
-[debug] [2025-07-24T08:17:36.178Z] >>> [apiv2][body] POST https://www.googleapis.com/oauth2/v3/token [omitted]
-[debug] [2025-07-24T08:17:36.895Z] <<< [apiv2][status] POST https://www.googleapis.com/oauth2/v3/token 200
-[debug] [2025-07-24T08:17:36.895Z] <<< [apiv2][body] POST https://www.googleapis.com/oauth2/v3/token [omitted]
-[debug] [2025-07-24T08:17:36.906Z] >>> [apiv2][query] GET https://firebase.googleapis.com/v1beta1/projects/cuk-alarm-c7f09 [none]
-[debug] [2025-07-24T08:17:37.731Z] <<< [apiv2][status] GET https://firebase.googleapis.com/v1beta1/projects/cuk-alarm-c7f09 200
-[debug] [2025-07-24T08:17:37.731Z] <<< [apiv2][body] GET https://firebase.googleapis.com/v1beta1/projects/cuk-alarm-c7f09 {"projectId":"cuk-alarm-c7f09","projectNumber":"984432791868","displayName":"cuk-alarm","name":"projects/cuk-alarm-c7f09","resources":{"hostingSite":"cuk-alarm-c7f09"},"state":"ACTIVE","etag":"1_191d1466-47a6-4089-ab60-4ba3935187aa"}
-[info] i  Using project cuk-alarm-c7f09 (cuk-alarm) 
-[info] 
-=== Functions Setup
-[debug] [2025-07-24T08:17:37.738Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
-[debug] [2025-07-24T08:17:37.738Z] > authorizing via signed-in user (hunyji34@gmail.com)
-[debug] [2025-07-24T08:17:37.738Z] [iam] checking project cuk-alarm-c7f09 for permissions ["firebase.projects.get"]
-[debug] [2025-07-24T08:17:37.739Z] Checked if tokens are valid: true, expires at: 1753348655895
-[debug] [2025-07-24T08:17:37.739Z] Checked if tokens are valid: true, expires at: 1753348655895
-[debug] [2025-07-24T08:17:37.739Z] >>> [apiv2][query] POST https://cloudresourcemanager.googleapis.com/v1/projects/cuk-alarm-c7f09:testIamPermissions [none]
-[debug] [2025-07-24T08:17:37.739Z] >>> [apiv2][(partial)header] POST https://cloudresourcemanager.googleapis.com/v1/projects/cuk-alarm-c7f09:testIamPermissions x-goog-quota-user=projects/cuk-alarm-c7f09
-[debug] [2025-07-24T08:17:37.739Z] >>> [apiv2][body] POST https://cloudresourcemanager.googleapis.com/v1/projects/cuk-alarm-c7f09:testIamPermissions {"permissions":["firebase.projects.get"]}
-[debug] [2025-07-24T08:17:38.407Z] <<< [apiv2][status] POST https://cloudresourcemanager.googleapis.com/v1/projects/cuk-alarm-c7f09:testIamPermissions 200
-[debug] [2025-07-24T08:17:38.407Z] <<< [apiv2][body] POST https://cloudresourcemanager.googleapis.com/v1/projects/cuk-alarm-c7f09:testIamPermissions {"permissions":["firebase.projects.get"]}
-[info] Let's create a new codebase for your functions.
-[info] A directory corresponding to the codebase will be created in your project
-[info] with sample code pre-configured.
-
-[info] See https://firebase.google.com/docs/functions/organize-functions for
-[info] more information on organizing your functions using codebases.
-
-[info] Functions can be deployed with firebase deploy.
-
+ {"metadata":{"emulator":{"name":"firestore"},"message":"Jul 30, 2025 5:45:43 PM io.netty.channel.DefaultChannelPipeline onUnhandledInboundException\nWARNING: An exceptionCaught() event was fired, and it reached at the tail of the pipeline. It usually means the last handler in the pipeline did not handle the exception.\njava.net.SocketException: Connection reset\n\tat java.base/sun.nio.ch.SocketChannelImpl.throwConnectionReset(SocketChannelImpl.java:403)\n\tat java.base/sun.nio.ch.SocketChannelImpl.implRead(SocketChannelImpl.java:435)\n\tat java.base/sun.nio.ch.SocketChannelImpl.read(SocketChannelImpl.java:493)\n\tat io.netty.buffer.PooledByteBuf.setBytes(PooledByteBuf.java:255)\n\tat io.netty.buffer.AbstractByteBuf.writeBytes(AbstractByteBuf.java:1132)\n\tat io.netty.channel.socket.nio.NioSocketChannel.doReadBytes(NioSocketChannel.java:356)\n\tat io.netty.channel.nio.AbstractNioByteChannel$NioByteUnsafe.read(AbstractNioByteChannel.java:151)\n\tat io.netty.channel.nio.NioEventLoop.processSelectedKey(NioEventLoop.java:788)\n\tat io.netty.channel.nio.NioEventLoop.processSelectedKeysOptimized(NioEventLoop.java:724)\n\tat io.netty.channel.nio.NioEventLoop.processSelectedKeys(NioEventLoop.java:650)\n\tat io.netty.channel.nio.NioEventLoop.run(NioEventLoop.java:562)\n\tat io.netty.util.concurrent.SingleThreadEventExecutor$4.run(SingleThreadEventExecutor.java:994)\n\tat io.netty.util.internal.ThreadExecutorMap$2.run(ThreadExecutorMap.java:74)\n\tat io.netty.util.concurrent.FastThreadLocalRunnable.run(FastThreadLocalRunnable.java:30)\n\tat java.base/java.lang.Thread.run(Thread.java:1575)\n\n"}}

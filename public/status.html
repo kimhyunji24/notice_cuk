@@ -11,8 +11,6 @@
         table { width: 100%; border-collapse: collapse; margin-top: 20px; }
         th, td { padding: 12px; text-align: left; border-bottom: 1px solid #ddd; }
         th { background-color: #f8f9fa; }
-        td a { color: #007bff; text-decoration: none; }
-        td a:hover { text-decoration: underline; }
         #loading { text-align: center; color: #888; }
     </style>
 </head>
@@ -27,14 +25,15 @@
                 </tr>
             </thead>
             <tbody id="status-body">
-                </tbody>
+                <!-- 자바스크립트가 이 부분을 채울 겁니다. -->
+            </tbody>
         </table>
         <p id="loading">데이터를 불러오는 중...</p>
     </div>
 
     <script>
-        // Render 서버의 /status API 주소
-        const statusApiUrl = 'https://gadaealrim.onrender.com/status';
+        // Firebase Hosting의 rewrite 설정을 사용하므로, 상대 경로로 API를 호출합니다.
+        const statusApiUrl = './api/status';
 
         // 페이지가 로드되면 API에서 데이터를 가져와 표를 채웁니다.
         window.onload = async () => {
@@ -47,7 +46,10 @@
                 
                 tableBody.innerHTML = ''; // 기존 내용 비우기
 
-                for (const siteId in data) {
+                // 데이터를 사이트 별명(key) 순서로 정렬하여 표시
+                const sortedSiteIds = Object.keys(data).sort();
+
+                for (const siteId of sortedSiteIds) {
                     const post = data[siteId];
                     const row = `
                         <tr>
@@ -63,31 +65,6 @@
                 document.getElementById('loading').textContent = '데이터를 불러오는 데 실패했습니다.';
             }
         };
-
-        
     </script>
-    <script type="module">
-  // Import the functions you need from the SDKs you need
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-app.js";
-  import { getAnalytics } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-analytics.js";
-  // TODO: Add SDKs for Firebase products that you want to use
-  // https://firebase.google.com/docs/web/setup#available-libraries
-
-  // Your web app's Firebase configuration
-  // For Firebase JS SDK v7.20.0 and later, measurementId is optional
-  const firebaseConfig = {
-    apiKey: "AIzaSyCN8QFbaBV9C5bYTG0e0Y-5mLlYw9OdpJU",
-    authDomain: "cuk-alarm-c7f09.firebaseapp.com",
-    projectId: "cuk-alarm-c7f09",
-    storageBucket: "cuk-alarm-c7f09.firebasestorage.app",
-    messagingSenderId: "984432791868",
-    appId: "1:984432791868:web:a46799f25aae0057660e39",
-    measurementId: "G-N9HB111ESG"
-  };
-
-  // Initialize Firebase
-  const app = initializeApp(firebaseConfig);
-  const analytics = getAnalytics(app);
-</script>
 </body>
 </html>
