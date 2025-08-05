@@ -9,16 +9,30 @@ const checkAllTypesButton = document.getElementById('check-all-types');
 const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
 const API_BASE_URL = isLocalhost 
     ? 'http://localhost:8234/cuk-alarm-c7f09/asia-northeast3' 
-    : 'https://cuk-alarm-c7f09.a.run.app';
+    : 'https://api-xrmuwasj7a-du.a.run.app';
 
 console.log('API Base URL:', API_BASE_URL);
 
 // --- OneSignal 초기화 (페이지 로드 시 1회 실행) ---
 window.OneSignal = window.OneSignal || [];
+
 OneSignal.push(function() {
     OneSignal.init({
         appId: "0a6879a0-d45c-45ff-8ffd-da673baef262",
+        allowLocalhostAsSecureOrigin: true,
+        notifyButton: {
+            enable: false,
+        },
+        autoRegister: true,
+        autoResubscribe: true,
     });
+});
+
+// OneSignal 초기화 완료 대기
+let oneSignalInitialized = false;
+OneSignal.push(function() {
+    oneSignalInitialized = true;
+    console.log('OneSignal 초기화 완료');
 });
 // ---------------------------------------------
 
@@ -40,18 +54,77 @@ checkAllTypesButton.addEventListener('click', () => {
 async function getPlayerId() {
     try {
         // OneSignal이 초기화될 때까지 대기
-        await new Promise(resolve => {
-            if (OneSignal.initialized) {
-                resolve();
-            } else {
-                OneSignal.push(() => resolve());
-            }
-        });
+        let attempts = 0;
+        const maxAttempts = 30; // 최대 30초 대기
+        
+        while (!oneSignalInitialized && attempts < maxAttempts) {
+            await new Promise(resolve => setTimeout(resolve, 1000));
+            attempts++;
+        }
 
-        const playerId = await OneSignal.getUserId();
+        if (!oneSignalInitialized) {
+            throw new Error('OneSignal 초기화 시간 초과');
+        }
+
+        // OneSignal SDK v16에서 올바른 API 사용
+        let playerId = null;
+        
+        // 방법 1: getUserId() 시도
+        if (typeof OneSignal.getUserId === 'function') {
+            playerId = await OneSignal.getUserId();
+        }
+        // 방법 2: getPlayerId() 시도 (이전 버전)
+        else if (typeof OneSignal.getPlayerId === 'function') {
+            playerId = await OneSignal.getPlayerId();
+        }
+        // 방법 3: User ID 직접 접근
+        else if (OneSignal.User && OneSignal.User.getOneSignalId) {
+            playerId = await OneSignal.User.getOneSignalId();
+        }
+        // 방법 4: 내부 객체에서 직접 가져오기
+        else if (OneSignal.User && OneSignal.User.getOneSignalId) {
+            playerId = OneSignal.User.getOneSignalId();
+        }
+        
+        console.log('Player ID 획득 시도 결과:', playerId);
+
+        if (!playerId) {
+            // 사용자가 아직 구독하지 않은 경우 구독 요청
+            console.log('Player ID가 없습니다. 구독 요청을 시작합니다.');
+            
+            // 구독 요청
+            if (typeof OneSignal.registerForPushNotifications === 'function') {
+                await OneSignal.registerForPushNotifications();
+            } else if (typeof OneSignal.showSlidedownPrompt === 'function') {
+                await OneSignal.showSlidedownPrompt();
+            }
+            
+            // 구독 후 다시 Player ID 가져오기 시도
+            await new Promise(resolve => setTimeout(resolve, 3000));
+            
+            // 다시 시도
+            if (typeof OneSignal.getUserId === 'function') {
+                playerId = await OneSignal.getUserId();
+            } else if (typeof OneSignal.getPlayerId === 'function') {
+                playerId = await OneSignal.getPlayerId();
+            } else if (OneSignal.User && OneSignal.User.getOneSignalId) {
+                playerId = await OneSignal.User.getOneSignalId();
+            }
+        }
+
         return playerId;
     } catch (error) {
         console.error('Player ID 가져오기 실패:', error);
+        
+        // 디버깅을 위한 OneSignal 객체 정보 출력
+        console.log('OneSignal 객체 정보:', {
+            OneSignal: typeof OneSignal,
+            getUserId: typeof OneSignal.getUserId,
+            getPlayerId: typeof OneSignal.getPlayerId,
+            User: OneSignal.User,
+            initialized: oneSignalInitialized
+        });
+        
         return null;
     }
 }
