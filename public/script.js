@@ -5,71 +5,82 @@ const webPushButton = document.getElementById('webpush-btn');
 const selectedListElement = document.getElementById('selected-list');
 const checkAllTypesButton = document.getElementById('check-all-types');
 
+// API 설정 - 로컬 개발 환경 감지
+const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+const API_BASE_URL = isLocalhost 
+    ? 'http://localhost:8234/cuk-alarm-c7f09/asia-northeast3' 
+    : 'https://cuk-alarm-c7f09.a.run.app';
+
+console.log('API Base URL:', API_BASE_URL);
+
 // --- OneSignal 초기화 (페이지 로드 시 1회 실행) ---
 window.OneSignal = window.OneSignal || [];
 OneSignal.push(function() {
     OneSignal.init({
-        appId: "0a6879a0-d45c-45ff-8ffd-da673baef262", // 본인의 App ID로 교체
+        appId: "0a6879a0-d45c-45ff-8ffd-da673baef262",
     });
 });
 // ---------------------------------------------
 
 // --- 이벤트 리스너 설정 ---
-webPushButton.addEventListener('click', subscribe);
-siteCheckboxes.forEach(checkbox => checkbox.addEventListener('click', updateSelectedList));
-typeCheckboxes.forEach(checkbox => checkbox.addEventListener('click', updateSelectedList));
+webPushButton.addEventListener('click', handleSubscribe);
+siteCheckboxes.forEach(checkbox => checkbox.addEventListener('change', updateSelectedList));
+typeCheckboxes.forEach(checkbox => checkbox.addEventListener('change', updateSelectedList));
 checkAllTypesButton.addEventListener('click', () => {
     typeCheckboxes.forEach(checkbox => checkbox.checked = true);
     updateSelectedList();
 });
 
-// --- 함수들 ---
+// --- 유틸리티 함수들 ---
 
-
-async function subscribe() {
-    // 안정적인 방법으로 Player ID 가져오기
-    const playerId = await getPlayerId();
-
-    if (!playerId) {
-        alert('알림을 허용해주세요! 알림 허용 창이 차단되었거나, 아직 ID가 발급되지 않았습니다.');
-        return;
-    }
-
-    const selectedSites = getSelectedValues(siteCheckboxes);
-    const selectedTypes = getSelectedValues(typeCheckboxes);
-
-    if (selectedSites.length === 0 && selectedTypes.length === 0) {
-        alert('알림 받을 학과 또는 알림 종류를 하나 이상 선택해주세요!');
-        return;
-    }
-
-    const dataToSend = {
-        playerId: playerId,
-        selectedSites: selectedSites,
-        method: 'webpush',
-        noticeTypes: selectedTypes
-    };
-
+/**
+ * OneSignal Player ID를 안전하게 가져오는 함수
+ * @returns {Promise<string|null>} Player ID 또는 null
+ */
+async function getPlayerId() {
     try {
-        // 여기가 바뀔 주소입니다.
-        // firebase deploy 후 터미널에 나오는 Function URL의 /api 부분을 붙여줍니다.
-        const response = await fetch('https://cuk-alarm-c7f09.a.run.app/subscribe', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(dataToSend)
+        // OneSignal이 초기화될 때까지 대기
+        await new Promise(resolve => {
+            if (OneSignal.initialized) {
+                resolve();
+            } else {
+                OneSignal.push(() => resolve());
+            }
         });
-        if (!response.ok) {
-            throw new Error(`서버 에러: ${response.status}`);
-        }
-        const result = await response.json();
-        alert(result.message);
+
+        const playerId = await OneSignal.getUserId();
+        return playerId;
     } catch (error) {
-        console.error('서버 통신 중 에러 발생:', error);
-        alert('구독 요청 중 문제가 발생했습니다.');
+        console.error('Player ID 가져오기 실패:', error);
+        return null;
     }
 }
 
+/**
+ * 선택된 체크박스들의 값을 배열로 반환
+ * @param {NodeList} checkboxes - 체크박스 요소들
+ * @returns {string[]} 선택된 값들의 배열
+ */
+function getSelectedValues(checkboxes) {
+    return Array.from(checkboxes)
+        .filter(checkbox => checkbox.checked)
+        .map(checkbox => checkbox.value);
+}
 
+/**
+ * 선택된 체크박스들의 라벨을 배열로 반환
+ * @param {NodeList} checkboxes - 체크박스 요소들
+ * @returns {string[]} 선택된 라벨들의 배열
+ */
+function getSelectedLabels(checkboxes) {
+    return Array.from(checkboxes)
+        .filter(checkbox => checkbox.checked)
+        .map(checkbox => checkbox.parentElement.textContent.trim());
+}
+
+/**
+ * 선택된 항목들을 화면에 표시
+ */
 function updateSelectedList() {
     const siteLabels = getSelectedLabels(siteCheckboxes);
     const typeLabels = getSelectedLabels(typeCheckboxes);
@@ -83,20 +94,93 @@ function updateSelectedList() {
     selectedListElement.textContent = displayText;
 }
 
-function getSelectedValues(checkboxes) {
-    const values = [];
-    checkboxes.forEach(checkbox => {
-        if (checkbox.checked) values.push(checkbox.value);
-    });
-    return values;
+/**
+ * 입력 데이터 유효성 검사
+ * @param {string} playerId - OneSignal Player ID
+ * @param {string[]} selectedSites - 선택된 사이트들
+ * @param {string[]} selectedTypes - 선택된 알림 타입들
+ * @returns {Object} 검사 결과
+ */
+function validateInput(playerId, selectedSites, selectedTypes) {
+    const errors = [];
+
+    if (!playerId) {
+        errors.push('알림을 허용해주세요! 알림 허용 창이 차단되었거나, 아직 ID가 발급되지 않았습니다.');
+    }
+
+    if (selectedSites.length === 0 && selectedTypes.length === 0) {
+        errors.push('알림 받을 학과 또는 알림 종류를 하나 이상 선택해주세요!');
+    }
+
+    return {
+        isValid: errors.length === 0,
+        errors
+    };
 }
 
-function getSelectedLabels(checkboxes) {
-    const labels = [];
-    checkboxes.forEach(checkbox => {
-        if (checkbox.checked) labels.push(checkbox.parentElement.textContent.trim());
-    });
-    return labels;
+/**
+ * 구독 요청을 처리하는 메인 함수
+ */
+async function handleSubscribe() {
+    try {
+        // 버튼 비활성화
+        webPushButton.disabled = true;
+        webPushButton.textContent = '처리 중...';
+
+        // Player ID 가져오기
+        const playerId = await getPlayerId();
+        const selectedSites = getSelectedValues(siteCheckboxes);
+        const selectedTypes = getSelectedValues(typeCheckboxes);
+
+        // 입력 데이터 검증
+        const validation = validateInput(playerId, selectedSites, selectedTypes);
+        if (!validation.isValid) {
+            alert(validation.errors.join('\n'));
+            return;
+        }
+
+        // API 요청 데이터 준비
+        const requestData = {
+            playerId: playerId,
+            selectedSites: selectedSites,
+            method: 'webpush',
+            noticeTypes: selectedTypes
+        };
+
+        console.log('구독 요청 데이터:', requestData);
+        console.log('API URL:', `${API_BASE_URL}/api/subscribe`);
+
+        // API 호출
+        const response = await fetch(`${API_BASE_URL}/api/subscribe`, {
+            method: 'POST',
+            headers: { 
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
+            },
+            body: JSON.stringify(requestData)
+        });
+
+        console.log('API 응답 상태:', response.status, response.statusText);
+
+        if (!response.ok) {
+            const errorData = await response.json().catch(() => ({}));
+            throw new Error(errorData.message || `서버 에러: ${response.status}`);
+        }
+
+        const result = await response.json();
+        console.log('API 응답 데이터:', result);
+        
+        alert(result.message || '구독이 성공적으로 완료되었습니다!');
+
+    } catch (error) {
+        console.error('구독 처리 중 에러 발생:', error);
+        alert(`구독 요청 중 문제가 발생했습니다: ${error.message}`);
+    } finally {
+        // 버튼 상태 복원
+        webPushButton.disabled = false;
+        webPushButton.textContent = '알림 받기';
+    }
 }
 
+// 초기 상태 설정
 updateSelectedList();

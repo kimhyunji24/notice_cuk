@@ -5,66 +5,247 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>최신 글 확인 상태</title>
     <style>
-        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background-color: #f4f4f9; color: #333; margin: 0; padding: 20px; }
-        .container { max-width: 800px; margin: 20px auto; background-color: white; padding: 20px 30px; border-radius: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
-        h1 { text-align: center; color: #4a4a4a; }
-        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-        th, td { padding: 12px; text-align: left; border-bottom: 1px solid #ddd; }
-        th { background-color: #f8f9fa; }
-        #loading { text-align: center; color: #888; }
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; 
+            background-color: #f4f4f9; 
+            color: #333; 
+            margin: 0; 
+            padding: 20px; 
+        }
+        .container { 
+            max-width: 800px; 
+            margin: 20px auto; 
+            background-color: white; 
+            padding: 20px 30px; 
+            border-radius: 10px; 
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1); 
+        }
+        h1 { 
+            text-align: center; 
+            color: #4a4a4a; 
+        }
+        table { 
+            width: 100%; 
+            border-collapse: collapse; 
+            margin-top: 20px; 
+        }
+        th, td { 
+            padding: 12px; 
+            text-align: left; 
+            border-bottom: 1px solid #ddd; 
+        }
+        th { 
+            background-color: #f8f9fa; 
+            font-weight: 600;
+        }
+        .loading { 
+            text-align: center; 
+            color: #888; 
+            padding: 20px;
+        }
+        .error { 
+            text-align: center; 
+            color: #dc3545; 
+            padding: 20px;
+            background-color: #f8d7da;
+            border-radius: 5px;
+            margin: 10px 0;
+        }
+        .success { 
+            text-align: center; 
+            color: #28a745; 
+            padding: 20px;
+            background-color: #d4edda;
+            border-radius: 5px;
+            margin: 10px 0;
+        }
+        .refresh-btn {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 10px 0;
+        }
+        .refresh-btn:hover {
+            background-color: #0056b3;
+        }
+        .refresh-btn:disabled {
+            background-color: #6c757d;
+            cursor: not-allowed;
+        }
+        .timestamp {
+            text-align: center;
+            color: #666;
+            font-size: 0.9em;
+            margin-top: 10px;
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <h1>최신 글 확인 상태 🛸</h1>
+        
+        <div style="text-align: center; margin: 20px 0;">
+            <button id="refresh-btn" class="refresh-btn">새로고침</button>
+        </div>
+
         <table id="status-table">
             <thead>
                 <tr>
                     <th>사이트 별명</th>
                     <th>마지막으로 확인된 글 제목</th>
+                    <th>글 번호</th>
                 </tr>
             </thead>
             <tbody id="status-body">
                 <!-- 자바스크립트가 이 부분을 채울 겁니다. -->
             </tbody>
         </table>
-        <p id="loading">데이터를 불러오는 중...</p>
+        
+        <div id="loading" class="loading">데이터를 불러오는 중...</div>
+        <div id="error" class="error" style="display: none;"></div>
+        <div id="success" class="success" style="display: none;"></div>
+        <div id="timestamp" class="timestamp"></div>
     </div>
 
     <script>
-        // Firebase Hosting의 rewrite 설정을 사용하므로, 상대 경로로 API를 호출합니다.
-        const statusApiUrl = './api/status';
+        // API 설정 - 로컬 개발 환경 감지
+        const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+        const API_BASE_URL = isLocalhost 
+            ? 'http://localhost:8234/cuk-alarm-c7f09/asia-northeast3' 
+            : 'https://cuk-alarm-c7f09.a.run.app';
+        const statusApiUrl = `${API_BASE_URL}/api/status`;
 
-        // 페이지가 로드되면 API에서 데이터를 가져와 표를 채웁니다.
-        window.onload = async () => {
+        console.log('API Base URL:', API_BASE_URL);
+        console.log('Status API URL:', statusApiUrl);
+
+        // DOM 요소들
+        const tableBody = document.getElementById('status-body');
+        const loadingElement = document.getElementById('loading');
+        const errorElement = document.getElementById('error');
+        const successElement = document.getElementById('success');
+        const timestampElement = document.getElementById('timestamp');
+        const refreshButton = document.getElementById('refresh-btn');
+
+        /**
+         * 상태 메시지를 표시하는 함수
+         * @param {string} type - 메시지 타입 ('loading', 'error', 'success')
+         * @param {string} message - 메시지 내용
+         */
+        function showMessage(type, message) {
+            // 모든 메시지 요소 숨기기
+            loadingElement.style.display = 'none';
+            errorElement.style.display = 'none';
+            successElement.style.display = 'none';
+
+            // 해당 타입의 메시지 표시
+            switch (type) {
+                case 'loading':
+                    loadingElement.textContent = message;
+                    loadingElement.style.display = 'block';
+                    break;
+                case 'error':
+                    errorElement.textContent = message;
+                    errorElement.style.display = 'block';
+                    break;
+                case 'success':
+                    successElement.textContent = message;
+                    successElement.style.display = 'block';
+                    break;
+            }
+        }
+
+        /**
+         * 데이터를 테이블에 표시하는 함수
+         * @param {Object} data - 상태 데이터
+         */
+        function displayData(data) {
+            tableBody.innerHTML = ''; // 기존 내용 비우기
+
+            // 데이터를 사이트 별명(key) 순서로 정렬하여 표시
+            const sortedSiteIds = Object.keys(data).sort();
+
+            if (sortedSiteIds.length === 0) {
+                tableBody.innerHTML = '<tr><td colspan="3" style="text-align: center; color: #666;">데이터가 없습니다.</td></tr>';
+                return;
+            }
+
+            for (const siteId of sortedSiteIds) {
+                const post = data[siteId];
+                const row = `
+                    <tr>
+                        <td><strong>${siteId}</strong></td>
+                        <td>${post.title || '제목 없음'}</td>
+                        <td>${post.no || '번호 없음'}</td>
+                    </tr>
+                `;
+                tableBody.innerHTML += row;
+            }
+        }
+
+        /**
+         * API에서 상태 데이터를 가져오는 함수
+         */
+        async function fetchStatusData() {
             try {
-                const response = await fetch(statusApiUrl);
-                const data = await response.json();
-                
-                const tableBody = document.getElementById('status-body');
-                const loadingText = document.getElementById('loading');
-                
-                tableBody.innerHTML = ''; // 기존 내용 비우기
+                showMessage('loading', '데이터를 불러오는 중...');
+                refreshButton.disabled = true;
 
-                // 데이터를 사이트 별명(key) 순서로 정렬하여 표시
-                const sortedSiteIds = Object.keys(data).sort();
+                console.log('API 호출 시작:', statusApiUrl);
 
-                for (const siteId of sortedSiteIds) {
-                    const post = data[siteId];
-                    const row = `
-                        <tr>
-                            <td>${siteId}</td>
-                            <td>${post.title} (글 번호: ${post.no})</td>
-                        </tr>
-                    `;
-                    tableBody.innerHTML += row;
+                const response = await fetch(statusApiUrl, {
+                    method: 'GET',
+                    headers: {
+                        'Accept': 'application/json'
+                    }
+                });
+
+                console.log('API 응답 상태:', response.status, response.statusText);
+
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
                 }
-                loadingText.style.display = 'none'; // '로딩 중' 메시지 숨기기
+
+                const result = await response.json();
+                console.log('API 응답 데이터:', result);
+
+                if (!result.success) {
+                    throw new Error(result.error || '데이터를 불러오는데 실패했습니다.');
+                }
+
+                // 데이터 표시
+                displayData(result.data);
+                
+                // 타임스탬프 표시
+                if (result.timestamp) {
+                    const date = new Date(result.timestamp);
+                    timestampElement.textContent = `마지막 업데이트: ${date.toLocaleString('ko-KR')}`;
+                }
+
+                showMessage('success', `✅ ${Object.keys(result.data).length}개 사이트의 상태를 성공적으로 불러왔습니다.`);
+                
             } catch (error) {
                 console.error('상태 데이터 로딩 실패:', error);
-                document.getElementById('loading').textContent = '데이터를 불러오는 데 실패했습니다.';
+                showMessage('error', `❌ 데이터를 불러오는 데 실패했습니다: ${error.message}`);
+            } finally {
+                refreshButton.disabled = false;
             }
-        };
+        }
+
+        // 이벤트 리스너 설정
+        refreshButton.addEventListener('click', fetchStatusData);
+
+        // 페이지 로드 시 데이터 가져오기
+        window.addEventListener('load', fetchStatusData);
+
+        // 5분마다 자동 새로고침 (선택사항)
+        setInterval(() => {
+            if (!refreshButton.disabled) {
+                fetchStatusData();
+            }
+        }, 5 * 60 * 1000);
     </script>
 </body>
 </html>
