@@ -113,10 +113,7 @@
     <script>
         // API 설정 - 로컬 개발 환경 감지
         const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
-        const API_BASE_URL = isLocalhost 
-            ? 'http://localhost:8234/cuk-alarm-c7f09/asia-northeast3' 
-            : 'https://cuk-alarm-c7f09.a.run.app';
-        const statusApiUrl = `${API_BASE_URL}/api/status`;
+        const statusApiUrl = `/api/status`;
 
         console.log('API Base URL:', API_BASE_URL);
         console.log('Status API URL:', statusApiUrl);
