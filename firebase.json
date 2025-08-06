@@ -1,6 +1,5 @@
 {
   "hosting": {
-    "site": "cuk-alarm",
     "public": "public",
     "ignore": [
       "firebase.json",
@@ -19,13 +18,13 @@
   },
   "emulators": {
     "functions": {
-      "port": 8234
+      "port": 5445
     },
     "firestore": {
-      "port": 3241
+      "port": 1256
     },
     "hosting": {
-      "port": 1230
+      "port": 9999
     },
     "ui": {
       "enabled": true

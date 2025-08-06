@@ -1,3 +1,5 @@
+// public/script.js (최종 수정본)
+
 // 필요한 HTML 요소들
 const siteCheckboxes = document.querySelectorAll('input[name="site"]');
 const typeCheckboxes = document.querySelectorAll('input[name="notice_type"]');
@@ -5,36 +7,17 @@ const webPushButton = document.getElementById('webpush-btn');
 const selectedListElement = document.getElementById('selected-list');
 const checkAllTypesButton = document.getElementById('check-all-types');
 
-// API 설정 - 로컬 개발 환경 감지
-const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
-const API_BASE_URL = isLocalhost 
-    ? 'http://localhost:8234/cuk-alarm-c7f09/asia-northeast3' 
-    : 'https://api-xrmuwasj7a-du.a.run.app';
+// API 설정 - firebase.json의 rewrites 규칙을 사용하므로 상대 경로로 충분합니다.
+const API_BASE_URL = '';
 
-console.log('API Base URL:', API_BASE_URL);
-
-// --- OneSignal 초기화 (페이지 로드 시 1회 실행) ---
+// --- OneSignal 초기화 ---
 window.OneSignal = window.OneSignal || [];
-
 OneSignal.push(function() {
     OneSignal.init({
-        appId: "0a6879a0-d45c-45ff-8ffd-da673baef262",
+        appId: "0a6879a0-d45c-45ff-8ffd-da673baef262", // 본인의 App ID
         allowLocalhostAsSecureOrigin: true,
-        notifyButton: {
-            enable: false,
-        },
-        autoRegister: true,
-        autoResubscribe: true,
     });
 });
-
-// OneSignal 초기화 완료 대기
-let oneSignalInitialized = false;
-OneSignal.push(function() {
-    oneSignalInitialized = true;
-    console.log('OneSignal 초기화 완료');
-});
-// ---------------------------------------------
 
 // --- 이벤트 리스너 설정 ---
 webPushButton.addEventListener('click', handleSubscribe);
@@ -45,119 +28,99 @@ checkAllTypesButton.addEventListener('click', () => {
     updateSelectedList();
 });
 
-// --- 유틸리티 함수들 ---
-
+// --- 함수들 ---
 /**
- * OneSignal Player ID를 안전하게 가져오는 함수
+ * OneSignal Player ID를 가져오는 함수 (v16 SDK 공식 문서 기준)
  * @returns {Promise<string|null>} Player ID 또는 null
  */
 async function getPlayerId() {
-    try {
-        // OneSignal이 초기화될 때까지 대기
-        let attempts = 0;
-        const maxAttempts = 30; // 최대 30초 대기
-        
-        while (!oneSignalInitialized && attempts < maxAttempts) {
-            await new Promise(resolve => setTimeout(resolve, 1000));
-            attempts++;
-        }
+    // OneSignal SDK가 완전히 로드될 때까지 기다립니다.
+    await OneSignal.initialized;
+    
+    // 현재 사용자 ID를 가져옵니다.
+    const playerId = OneSignal.User.onesignalId;
 
-        if (!oneSignalInitialized) {
-            throw new Error('OneSignal 초기화 시간 초과');
-        }
-
-        // OneSignal SDK v16에서 올바른 API 사용
-        let playerId = null;
-        
-        // 방법 1: getUserId() 시도
-        if (typeof OneSignal.getUserId === 'function') {
-            playerId = await OneSignal.getUserId();
-        }
-        // 방법 2: getPlayerId() 시도 (이전 버전)
-        else if (typeof OneSignal.getPlayerId === 'function') {
-            playerId = await OneSignal.getPlayerId();
-        }
-        // 방법 3: User ID 직접 접근
-        else if (OneSignal.User && OneSignal.User.getOneSignalId) {
-            playerId = await OneSignal.User.getOneSignalId();
-        }
-        // 방법 4: 내부 객체에서 직접 가져오기
-        else if (OneSignal.User && OneSignal.User.getOneSignalId) {
-            playerId = OneSignal.User.getOneSignalId();
-        }
-        
-        console.log('Player ID 획득 시도 결과:', playerId);
-
-        if (!playerId) {
-            // 사용자가 아직 구독하지 않은 경우 구독 요청
-            console.log('Player ID가 없습니다. 구독 요청을 시작합니다.');
-            
-            // 구독 요청
-            if (typeof OneSignal.registerForPushNotifications === 'function') {
-                await OneSignal.registerForPushNotifications();
-            } else if (typeof OneSignal.showSlidedownPrompt === 'function') {
-                await OneSignal.showSlidedownPrompt();
-            }
-            
-            // 구독 후 다시 Player ID 가져오기 시도
-            await new Promise(resolve => setTimeout(resolve, 3000));
-            
-            // 다시 시도
-            if (typeof OneSignal.getUserId === 'function') {
-                playerId = await OneSignal.getUserId();
-            } else if (typeof OneSignal.getPlayerId === 'function') {
-                playerId = await OneSignal.getPlayerId();
-            } else if (OneSignal.User && OneSignal.User.getOneSignalId) {
-                playerId = await OneSignal.User.getOneSignalId();
-            }
-        }
-
+    if (playerId) {
+        console.log('기존 Player ID:', playerId);
         return playerId;
-    } catch (error) {
-        console.error('Player ID 가져오기 실패:', error);
+    } else {
+        // ID가 없는 경우, 사용자에게 알림 권한을 요청합니다.
+        console.log('Player ID가 없어 알림 권한을 요청합니다.');
+        await OneSignal.Notifications.requestPermission();
         
-        // 디버깅을 위한 OneSignal 객체 정보 출력
-        console.log('OneSignal 객체 정보:', {
-            OneSignal: typeof OneSignal,
-            getUserId: typeof OneSignal.getUserId,
-            getPlayerId: typeof OneSignal.getPlayerId,
-            User: OneSignal.User,
-            initialized: oneSignalInitialized
-        });
-        
-        return null;
+        // 권한 요청 후 ID가 할당될 때까지 잠시 기다립니다.
+        await new Promise(resolve => setTimeout(resolve, 2000));
+        const newPlayerId = OneSignal.User.onesignalId;
+        console.log('새로 발급된 Player ID:', newPlayerId);
+        return newPlayerId;
     }
 }
 
 /**
- * 선택된 체크박스들의 값을 배열로 반환
- * @param {NodeList} checkboxes - 체크박스 요소들
- * @returns {string[]} 선택된 값들의 배열
+ * 구독 요청을 처리하는 메인 함수
  */
+async function handleSubscribe() {
+    webPushButton.disabled = true;
+    webPushButton.textContent = '처리 중...';
+
+    try {
+        const playerId = await getPlayerId();
+        if (!playerId) {
+            throw new Error('OneSignal Player ID를 가져올 수 없습니다. 알림이 차단되었는지 확인해주세요.');
+        }
+
+        const selectedSites = getSelectedValues(siteCheckboxes);
+        const selectedTypes = getSelectedValues(typeCheckboxes);
+
+        if (selectedSites.length === 0 && selectedTypes.length === 0) {
+            alert('알림 받을 학과 또는 알림 종류를 하나 이상 선택해주세요!');
+            return;
+        }
+
+        const requestData = {
+            playerId: playerId,
+            selectedSites: selectedSites,
+            noticeTypes: selectedTypes
+        };
+
+        const response = await fetch(`${API_BASE_URL}/subscribe`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(requestData)
+        });
+
+        if (!response.ok) {
+            const errorData = await response.json().catch(() => ({}));
+            throw new Error(errorData.error || `서버 에러: ${response.status}`);
+        }
+
+        const result = await response.json();
+        alert(result.message || '구독이 성공적으로 완료되었습니다!');
+
+    } catch (error) {
+        console.error('구독 처리 중 에러 발생:', error);
+        alert(`구독 요청 중 문제가 발생했습니다: ${error.message}`);
+    } finally {
+        webPushButton.disabled = false;
+        webPushButton.textContent = '알림 받기';
+    }
+}
+
 function getSelectedValues(checkboxes) {
     return Array.from(checkboxes)
-        .filter(checkbox => checkbox.checked)
-        .map(checkbox => checkbox.value);
+        .filter(cb => cb.checked)
+        .map(cb => cb.value);
 }
 
-/**
- * 선택된 체크박스들의 라벨을 배열로 반환
- * @param {NodeList} checkboxes - 체크박스 요소들
- * @returns {string[]} 선택된 라벨들의 배열
- */
 function getSelectedLabels(checkboxes) {
     return Array.from(checkboxes)
-        .filter(checkbox => checkbox.checked)
-        .map(checkbox => checkbox.parentElement.textContent.trim());
+        .filter(cb => cb.checked)
+        .map(cb => cb.parentElement.textContent.trim());
 }
 
-/**
- * 선택된 항목들을 화면에 표시
- */
 function updateSelectedList() {
     const siteLabels = getSelectedLabels(siteCheckboxes);
     const typeLabels = getSelectedLabels(typeCheckboxes);
-
     let displayText = "선택한 학과 또는 종류가 없습니다.";
     if (siteLabels.length > 0 || typeLabels.length > 0) {
         const sitesText = siteLabels.length > 0 ? `학과: ${siteLabels.join(', ')}` : '';
@@ -167,93 +130,5 @@ function updateSelectedList() {
     selectedListElement.textContent = displayText;
 }
 
-/**
- * 입력 데이터 유효성 검사
- * @param {string} playerId - OneSignal Player ID
- * @param {string[]} selectedSites - 선택된 사이트들
- * @param {string[]} selectedTypes - 선택된 알림 타입들
- * @returns {Object} 검사 결과
- */
-function validateInput(playerId, selectedSites, selectedTypes) {
-    const errors = [];
-
-    if (!playerId) {
-        errors.push('알림을 허용해주세요! 알림 허용 창이 차단되었거나, 아직 ID가 발급되지 않았습니다.');
-    }
-
-    if (selectedSites.length === 0 && selectedTypes.length === 0) {
-        errors.push('알림 받을 학과 또는 알림 종류를 하나 이상 선택해주세요!');
-    }
-
-    return {
-        isValid: errors.length === 0,
-        errors
-    };
-}
-
-/**
- * 구독 요청을 처리하는 메인 함수
- */
-async function handleSubscribe() {
-    try {
-        // 버튼 비활성화
-        webPushButton.disabled = true;
-        webPushButton.textContent = '처리 중...';
-
-        // Player ID 가져오기
-        const playerId = await getPlayerId();
-        const selectedSites = getSelectedValues(siteCheckboxes);
-        const selectedTypes = getSelectedValues(typeCheckboxes);
-
-        // 입력 데이터 검증
-        const validation = validateInput(playerId, selectedSites, selectedTypes);
-        if (!validation.isValid) {
-            alert(validation.errors.join('\n'));
-            return;
-        }
-
-        // API 요청 데이터 준비
-        const requestData = {
-            playerId: playerId,
-            selectedSites: selectedSites,
-            method: 'webpush',
-            noticeTypes: selectedTypes
-        };
-
-        console.log('구독 요청 데이터:', requestData);
-        console.log('API URL:', `${API_BASE_URL}/api/subscribe`);
-
-        // API 호출
-        const response = await fetch(`${API_BASE_URL}/api/subscribe`, {
-            method: 'POST',
-            headers: { 
-                'Content-Type': 'application/json',
-                'Accept': 'application/json'
-            },
-            body: JSON.stringify(requestData)
-        });
-
-        console.log('API 응답 상태:', response.status, response.statusText);
-
-        if (!response.ok) {
-            const errorData = await response.json().catch(() => ({}));
-            throw new Error(errorData.message || `서버 에러: ${response.status}`);
-        }
-
-        const result = await response.json();
-        console.log('API 응답 데이터:', result);
-        
-        alert(result.message || '구독이 성공적으로 완료되었습니다!');
-
-    } catch (error) {
-        console.error('구독 처리 중 에러 발생:', error);
-        alert(`구독 요청 중 문제가 발생했습니다: ${error.message}`);
-    } finally {
-        // 버튼 상태 복원
-        webPushButton.disabled = false;
-        webPushButton.textContent = '알림 받기';
-    }
-}
-
-// 초기 상태 설정
+// 페이지 로드 시 초기 상태 설정
 updateSelectedList();
