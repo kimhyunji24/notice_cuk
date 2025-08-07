@@ -11,12 +11,21 @@ const API_BASE_URL = '/api';
 
 // --- OneSignal 초기화 ---
 window.OneSignal = window.OneSignal || [];
-OneSignal.push(function() {
-    OneSignal.init({
-        appId: "0a6879a0-d45c-45ff-8ffd-da673baef262", // 👈 본인의 App ID로 교체!
-    });
-});
+const OneSignal = window.OneSignal;
 
+// 공식 문서 권장 비동기 초기화 함수
+async function initOneSignal() {
+    console.log('[public/script.js] OneSignal 초기화 시작');
+    // appId는 .env 파일이나 별도 설정 파일로 관리하는 것이 더 안전합니다.
+    await OneSignal.init({ 
+        appId: "0a6879a0-d45c-45ff-8ffd-da673baef262",
+        allowLocalhostAsSecureOrigin: true, // 로컬 테스트를 위한 설정
+    });
+    console.log('[public/script.js] OneSignal 초기화 완료');
+}
+
+// 초기화 함수를 페이지 로드 시 즉시 실행
+initOneSignal();
 // --- 이벤트 리스너 ---
 webPushButton.addEventListener('click', handleSubscribe);
 siteCheckboxes.forEach(checkbox => checkbox.addEventListener('change', updateSelectedList));
@@ -27,14 +36,29 @@ checkAllTypesButton.addEventListener('click', () => {
 });
 
 // --- 함수들 ---
+// getPlayerId 함수를 더 명확하게 수정
 async function getPlayerId() {
-    await OneSignal.initialized;
-    const playerId = OneSignal.User.onesignalId;
-    if (playerId) return playerId;
+    // OneSignal이 완전히 로드될 때까지 기다림
+    await OneSignal.Slidedown.prompt.isShowing();
 
-    await OneSignal.Notifications.requestPermission();
-    await new Promise(resolve => setTimeout(resolve, 2000));
-    return OneSignal.User.onesignalId;
+    const playerId = OneSignal.User.onesignalId;
+    console.log('[public/script.js] 현재 Player ID:', playerId);
+
+    if (playerId) {
+        return playerId;
+    } else {
+        console.log('[public/script.js] Player ID가 없으므로 알림 권한을 요청합니다.');
+        // 알림 권한을 요청하고 사용자의 선택을 기다림
+        const permission = await OneSignal.Notifications.requestPermission();
+        if (permission) {
+             // 권한 획득 후 Player ID를 다시 조회
+            const newPlayerId = OneSignal.User.onesignalId;
+            console.log('[public/script.js] 새로운 Player ID:', newPlayerId);
+            return newPlayerId;
+        } else {
+            return null; // 사용자가 거부한 경우
+        }
+    }
 }
 async function handleSubscribe() {
     console.log('[public/script.js] "알림 받기" 버튼 클릭');
