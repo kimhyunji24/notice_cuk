@@ -89,20 +89,35 @@ app.get("/status", async (req, res) => {
         });
     }
 });
-
 app.post("/subscribe", async (req, res) => {
+    console.log('[functions/index.js] /subscribe 요청 수신:', req.body);
     let { playerId, selectedSites, noticeTypes } = req.body;
-    if (!playerId) return res.status(400).json({ error: "Player ID가 없습니다." });
-    if (!selectedSites || selectedSites.length === 0) selectedSites = ["catholic_notice"];
-    if (!noticeTypes || noticeTypes.length === 0) noticeTypes = ["important", "general"];
+
+    if (!playerId) {
+        console.error('[functions/index.js] 오류: Player ID 없음');
+        return res.status(400).json({ error: "Player ID가 없습니다." });
+    }
+
+    if (!selectedSites || selectedSites.length === 0) {
+        console.log('[functions/index.js] 선택된 사이트가 없어 기본값("catholic_notice")으로 설정합니다.');
+        selectedSites = ["catholic_notice"];
+    }
+    if (!noticeTypes || noticeTypes.length === 0) {
+        console.log('[functions/index.js] 선택된 알림 종류가 없어 기본값("important", "general")으로 설정합니다.');
+        noticeTypes = ["important", "general"];
+    }
+
     try {
+        console.log(`[functions/index.js] Firestore에 구독 정보 저장 시작 (Player ID: ${playerId})`);
         await db.collection("subscriptions").doc(playerId).set({
             sites: selectedSites,
             types: noticeTypes,
             updatedAt: admin.firestore.FieldValue.serverTimestamp(),
         });
+        console.log(`[functions/index.js] Firestore 저장 성공 (Player ID: ${playerId})`);
         res.status(200).json({ message: "구독 정보가 성공적으로 갱신되었습니다!" });
     } catch (error) {
+        console.error(`[functions/index.js] Firestore 저장 실패 (Player ID: ${playerId}):`, error);
         res.status(500).json({ error: "서버 오류가 발생했습니다." });
     }
 });
@@ -132,22 +147,30 @@ async function runAllChecks() {
     await Promise.all(promises);
     console.log("✅ 모든 사이트 확인 완료.");
 }
-
 async function checkSite(siteId, url) {
+    console.log(`[functions/index.js] [${siteId}] 크롤링 시작: ${url}`);
     try {
         const { data } = await axios.get(url, { timeout: 15000 });
         const $ = cheerio.load(data);
         const latestPostElement = $("a.b-title").first();
-        if (latestPostElement.length === 0) return;
+        
+        if (latestPostElement.length === 0) {
+            console.warn(`[functions/index.js] [${siteId}] 최신 게시물을 찾을 수 없습니다.`);
+            return;
+        }
 
         const articleNo = latestPostElement.attr("data-article-no");
         const title = latestPostElement.text().trim();
         const postNumberText = latestPostElement.closest("tr").find(".td-num").text().trim();
         const noticeType = isNaN(postNumberText) ? "important" : "general";
+        
+        console.log(`[functions/index.js] [${siteId}] 최신 글 정보: No.${articleNo}, 제목: ${title}, 타입: ${noticeType}`);
 
         const stateRef = db.collection("crawler_state").doc(siteId);
         const doc = await stateRef.get();
         const lastKnownNo = doc.exists ? doc.data().no : null;
+
+        console.log(`[functions/index.js] [${siteId}] 이전 게시물 번호: ${lastKnownNo}, 현재 게시물 번호: ${articleNo}`);
 
         if (lastKnownNo && lastKnownNo !== articleNo) {
             console.log(`🎉 [${siteId}] 새로운 게시물 발견: ${title}`);
@@ -160,7 +183,7 @@ async function checkSite(siteId, url) {
         }
         await stateRef.set({ no: articleNo, title: title, updatedAt: new Date().toISOString() });
     } catch (error) {
-        console.error(`[${siteId}] 크롤링 실패:`, error.message);
+        console.error(`[functions/index.js] [${siteId}] 크롤링 실패:`, error.message);
     }
 }
 
