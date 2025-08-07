@@ -91,14 +91,13 @@ webPushButton.addEventListener('click', handleSubscribe);
 // 페이지가 로드되면 Firebase 초기화 함수를 실행
 document.addEventListener('DOMContentLoaded', initializeApp);
 
-// // --- 이벤트 리스너 ---
-// webPushButton.addEventListener('click', handleSubscribe);
-// siteCheckboxes.forEach(checkbox => checkbox.addEventListener('change', updateSelectedList));
-// typeCheckboxes.forEach(checkbox => checkbox.addEventListener('change', updateSelectedList));
-// checkAllTypesButton.addEventListener('click', () => {
-//     typeCheckboxes.forEach(checkbox => checkbox.checked = true);
-//     updateSelectedList();
-// });
+// --- 이벤트 리스너 ---
+siteCheckboxes.forEach(checkbox => checkbox.addEventListener('change', updateSelectedList));
+typeCheckboxes.forEach(checkbox => checkbox.addEventListener('change', updateSelectedList));
+checkAllTypesButton.addEventListener('click', () => {
+    typeCheckboxes.forEach(checkbox => checkbox.checked = true);
+    updateSelectedList();
+});
 
 // // --- 함수들 ---
 // // getPlayerId 함수를 더 명확하게 수정

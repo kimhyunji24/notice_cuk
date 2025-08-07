@@ -100,7 +100,6 @@
                 </tr>
             </thead>
             <tbody id="status-body">
-                <!-- 자바스크립트가 이 부분을 채울 겁니다. -->
             </tbody>
         </table>
         
@@ -113,7 +112,9 @@
     <script>
         // API 설정 - 로컬 개발 환경 감지
         const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
-        const statusApiUrl = '/api/status';
+
+        const API_BASE_URL = '/api';
+        const statusApiUrl = `${API_BASE_URL}/status`;
 
         console.log('API Base URL:', API_BASE_URL);
         console.log('Status API URL:', statusApiUrl);
