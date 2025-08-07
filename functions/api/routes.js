@@ -2,16 +2,29 @@
 const express = require("express");
 const admin = require("firebase-admin");
 const { body, validationResult } = require("express-validator");
-const { siteUrlMap } = require("../constants");
-const { checkSite } = require("../crawler/checker");
+// ... (checker, constants require)
 
 const router = express.Router();
 const db = admin.firestore();
 
+// 신규 추가: 프론트엔드에 공개 가능한 Firebase 설정을 전달하는 API
+router.get("/config", (req, res) => {
+    res.status(200).json({
+        apiKey: process.env.APP_API_KEY,
+        authDomain: process.env.APP_AUTH_DOMAIN,
+        projectId: process.env.APP_PROJECT_ID,
+        storageBucket: process.env.APP_STORAGE_BUCKET,
+        messagingSenderId: process.env.APP_MESSAGING_SENDER_ID,
+        appId: process.env.APP_APP_ID,
+        vapidKey: process.env.VAPID_KEY,
+    });
+});
+
+
 // POST /api/subscribe
 router.post(
     "/subscribe",
-    body("playerId").isString().withMessage("Player ID는 문자열이어야 합니다.").notEmpty().withMessage("Player ID는 필수입니다."),
+    body("fcmToken").isString().notEmpty(),
     body("selectedSites").isArray().withMessage("선택된 사이트는 배열이어야 합니다."),
     body("noticeTypes").isArray().withMessage("알림 종류는 배열이어야 합니다."),
     async (req, res) => {
@@ -20,20 +33,20 @@ router.post(
             return res.status(400).json({ success: false, errors: errors.array() });
         }
 
-        let { playerId, selectedSites, noticeTypes } = req.body;
+        const { fcmToken, selectedSites, noticeTypes } = req.body;
+
         if (selectedSites.length === 0) selectedSites = ["catholic_notice"];
         if (noticeTypes.length === 0) noticeTypes = ["important", "general"];
 
-        try {
-            await db.collection("subscriptions").doc(playerId).set({
+                try {
+            await db.collection("subscriptions").doc(fcmToken).set({
                 sites: selectedSites,
                 types: noticeTypes,
                 updatedAt: admin.firestore.FieldValue.serverTimestamp(),
             });
-            res.status(200).json({ success: true, message: "구독 정보가 성공적으로 갱신되었습니다!" });
+            res.status(200).json({ success: true, message: "FCM 구독 정보가 갱신되었습니다!" });
         } catch (error) {
-            console.error(`[API] /subscribe Firestore 저장 실패:`, error);
-            res.status(500).json({ success: false, error: "서버 오류가 발생했습니다." });
+            res.status(500).json({ success: false, error: "서버 오류 발생" });
         }
     }
 );
