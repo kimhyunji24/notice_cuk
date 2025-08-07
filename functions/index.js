@@ -75,9 +75,18 @@ app.get("/status", async (req, res) => {
         const snapshot = await db.collection("crawler_state").get();
         const lastPosts = {};
         snapshot.forEach(doc => { lastPosts[doc.id] = doc.data(); });
-        res.status(200).json(lastPosts);
+        // 프론트엔드에서 기대하는 형식으로 응답을 감싸줍니다.
+        res.status(200).json({
+            success: true,
+            data: lastPosts,
+            timestamp: new Date().toISOString()
+        });
     } catch (error) {
-        res.status(500).json({ error: "상태 데이터를 불러오는 데 실패했습니다." });
+        // 에러 응답 형식도 통일합니다.
+        res.status(500).json({
+            success: false,
+            error: "상태 데이터를 불러오는 데 실패했습니다."
+        });
     }
 });
 
