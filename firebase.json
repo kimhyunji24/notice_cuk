@@ -1,7 +1,7 @@
 {
   "hosting": {
     "public": "public",
-    "site" :"ㄴ",
+    "site" : "cuk-alarm.web.app",
     "ignore": [
       "firebase.json",
       "**/.*",
