@@ -1,0 +1,36 @@
+// Firestore 보안 규칙
+// Firebase Functions 및 인증된 사용자만 접근 가능
+
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // 구독 정보: Functions에서만 읽기/쓰기 가능
+    match /subscriptions/{token} {
+      allow read, write: if request.auth != null && request.auth.token.firebase.sign_in_provider == 'custom';
+      // 또는 Firebase Functions에서 Admin SDK 사용 시 자동 허용
+    }
+    
+    // 크롤링된 게시물 정보: Functions에서만 읽기/쓰기 가능
+    match /crawled_posts/{siteId} {
+      allow read, write: if request.auth != null && request.auth.token.firebase.sign_in_provider == 'custom';
+    }
+    
+    // 시스템 메트릭: Functions에서만 읽기/쓰기 가능
+    match /system_metrics/{metricId} {
+      allow read, write: if request.auth != null && request.auth.token.firebase.sign_in_provider == 'custom';
+    }
+    
+    // 시스템 알림: Functions에서만 읽기/쓰기 가능  
+    match /system_alerts/{alertId} {
+      allow read, write: if request.auth != null && request.auth.token.firebase.sign_in_provider == 'custom';
+    }
+    
+    // 개발/테스트 환경에서는 모든 접근 허용 (임시)
+    // 프로덕션에서는 이 규칙을 제거해야 함
+    match /{document=**} {
+      allow read, write: if true; // ⚠️ 개발용 - 프로덕션에서는 제거 필요
+    }
+  }
+}

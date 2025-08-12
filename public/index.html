@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CUK 공지사항 알리미</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="manifest" href="manifest.json">
+    <link rel="icon" href="favicon.ico">
+    <meta name="theme-color" content="#2563eb">
+    <meta name="description" content="가톨릭대학교 학과 공지사항을 실시간으로 받아보세요">
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <div class="header-content">
+                <h1 class="title">
+                    <span class="title-icon">🔔</span>
+                    CUK 공지사항 알리미
+                </h1>
+                <p class="subtitle">가톨릭대학교 학과 공지사항을 실시간으로 받아보세요</p>
+            </div>
+        </header>
+
+        <main class="main">
+            <!-- 알림 권한 상태 -->
+            <div id="permission-card" class="card hidden">
+                <div class="card-header">
+                    <h2>🔐 알림 권한 필요</h2>
+                </div>
+                <div class="card-content">
+                    <p>공지사항 알림을 받으려면 브라우저 알림 권한이 필요합니다.</p>
+                    <button id="enable-notifications" class="btn btn-primary">
+                        알림 권한 허용하기
+                    </button>
+                </div>
+            </div>
+
+            <!-- 구독 설정 -->
+            <div id="subscription-card" class="card">
+                <div class="card-header">
+                    <h2>📚 구독할 학과 선택</h2>
+                </div>
+                <div class="card-content">
+                    <div id="loading-state" class="loading">
+                        <div class="spinner"></div>
+                        <p>학과 목록을 불러오는 중...</p>
+                    </div>
+
+                    <div id="subscription-form" class="hidden">
+                        <div class="search-container">
+                            <input type="text" id="search-input" class="search-input" 
+                                   placeholder="학과명을 검색하세요 (예: 컴퓨터, 영어, 경영)">
+                        </div>
+
+                        <div class="filter-tabs">
+                            <button class="filter-tab active" data-category="all">전체</button>
+                            <button class="filter-tab" data-category="공학계열">공학</button>
+                            <button class="filter-tab" data-category="인문계열">인문</button>
+                            <button class="filter-tab" data-category="경영계열">경영</button>
+                            <button class="filter-tab" data-category="자연계열">자연</button>
+                        </div>
+
+                        <div class="select-actions">
+                            <button id="select-all" class="btn btn-secondary">전체 선택</button>
+                            <button id="clear-all" class="btn btn-secondary">전체 해제</button>
+                            <span id="selected-count" class="selected-count">선택됨: 0개</span>
+                        </div>
+
+                        <div id="sites-container" class="sites-grid">
+                            <!-- 동적으로 생성됨 -->
+                        </div>
+
+                        <div class="form-actions">
+                            <button id="save-subscription" class="btn btn-primary" disabled>
+                                <span class="btn-text">구독 설정 저장</span>
+                                <div class="btn-loading hidden">
+                                    <div class="spinner-small"></div>
+                                </div>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 상태 메시지 -->
+            <div id="message-area" class="message-area hidden">
+                <!-- 동적으로 메시지가 표시됨 -->
+            </div>
+        </main>
+
+        <footer class="footer">
+            <div class="footer-content">
+                <div class="footer-links">
+                    <a href="status-enhanced.html" class="footer-link">크롤링 상태 확인</a>
+                    <a href="#" id="test-notification" class="footer-link">알림 테스트</a>
+                </div>
+                <p class="footer-text">
+                    © 2024 CUK 공지사항 알리미 | 
+                    <a href="https://www.catholic.ac.kr" target="_blank" rel="noopener">가톨릭대학교</a>
+                </p>
+            </div>
+        </footer>
+    </div>
+
+    <!-- Firebase SDK v8 (호환성을 위해) -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-messaging.js"></script>
+    
+    <!-- 환경 설정 -->
+    <script src="config.js"></script>
+    
+    <!-- 메인 스크립트 -->
+    <script src="script.js"></script>
+</body>
+</html>
