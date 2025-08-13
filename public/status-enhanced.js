@@ -90,6 +90,8 @@ class SystemStatusMonitor {
     }
 
     renderStatus(data) {
+        this.allSites = data.crawler.sites; //getMostPopularSite가 this.allSite를 참조하게
+
         this.renderSystemStatus(data.system, data.health);
         this.renderCrawlerStatus(data.crawler);
         this.renderSubscriptionStatus(data.subscriptions);
@@ -162,8 +164,8 @@ class SystemStatusMonitor {
             
             row.innerHTML = `
                 <td><span class="site-status ${statusClass}"></span></td>
-                <td>${this.getSiteName(siteId)}</td>
-                <td>${this.getSiteCategory(siteId)}</td>
+                <td>${siteData.name}</td>
+                <td>${siteData.category}</td>
                 <td>${lastCrawled}</td>
                 <td>${siteData.postCount || 0}</td>
                 <td title="${siteData.lastTitle || ''}">${this.truncateText(siteData.lastTitle || '-', 30)}</td>
@@ -246,28 +248,11 @@ class SystemStatusMonitor {
         const mostPopular = Object.entries(siteSubscriptions)
             .sort(([,a], [,b]) => b - a)[0];
         
-        return `${this.getSiteName(mostPopular[0])} (${mostPopular[1]}명)`;
-    }
+        const siteId = mostPopular[0];
+        const siteName = this.allSites[siteId] ? this.allSites[siteId].name : siteId;
 
-    getSiteName(siteId) {
-        // 실제로는 사이트 설정에서 가져와야 함
-        const siteNames = {
-            'dept_computer_info': '컴퓨터정보공학부',
-            'dept_ai': '인공지능학과',
-            'catholic_notice': '가톨릭대학교 공지사항'
-        };
-        return siteNames[siteId] || siteId;
+        return `${siteName} (${mostPopular[1]}명)`;
     }
-
-    getSiteCategory(siteId) {
-        const categories = {
-            'dept_computer_info': '공학계열',
-            'dept_ai': '공학계열',
-            'catholic_notice': '대학공지'
-        };
-        return categories[siteId] || '기타';
-    }
-
     truncateText(text, maxLength) {
         if (!text) return '-';
         return text.length > maxLength ? text.substring(0, maxLength) + '...' : text;
