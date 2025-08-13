@@ -7,6 +7,15 @@ export interface SiteConfig {
 }
 
 export const SITE_CONFIGS: Record<string, SiteConfig> = {
+
+  'catholic_notice': {
+    id: 'catholic_notice',
+    name: '가톨릭대학교 공지사항',
+    url: 'https://www.catholic.ac.kr/ko/campuslife/notice.do',
+    selector: 'a.b-title',
+    category: '대학공지'
+  },
+
   'dept_korean_language': {
     id: 'dept_korean_language',
     name: '국어국문학과',
@@ -282,7 +291,7 @@ export const SITE_CONFIGS: Record<string, SiteConfig> = {
   },
   'dept_general_college': {
     id: 'dept_general_college',
-    name: '가톨릭대학교',
+    name: '가톨릭대학교 학부대학',
     url: 'https://catholic-college.catholic.ac.kr/catholic_college/notification/notice.do',
     selector: 'a.b-title',
     category: '대학'
@@ -314,12 +323,5 @@ export const SITE_CONFIGS: Record<string, SiteConfig> = {
     url: 'https://pharmacy.catholic.ac.kr/pharmacy/community/notice.do',
     selector: 'a.b-title',
     category: '약학계열'
-  },
-  'catholic_notice': {
-    id: 'catholic_notice',
-    name: '가톨릭대학교 공지사항',
-    url: 'https://www.catholic.ac.kr/ko/campuslife/notice.do',
-    selector: 'a.b-title',
-    category: '대학공지'
   }
 }
