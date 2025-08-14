@@ -173,27 +173,37 @@ class CrawlerService {
 
   /**
    * HTML에서 게시물들을 파싱합니다
-   */
-  private parsePosts($: cheerio.CheerioAPI, config: any, siteId: string): Post[] {
+   */// functions/src/crawler/crawler.service.ts
+
+private parsePosts($: cheerio.CheerioAPI, config: any, siteId: string): Post[] {
     const posts: Post[] = [];
-    const postElements = $(config.selector).slice(0, 20); // 최신 20개만
+    const postElements = $(config.selector).slice(0, 20);
+
+    console.log(`[${siteId}] 파싱 시작: ${postElements.length}개의 요소를 찾았습니다.`);
 
     postElements.each((_index: number, element: any) => {
       const $el = $(element);
       const articleNo = $el.attr('data-article-no');
-      
-      if (!articleNo) return;
-
       const title = $el.text().trim();
-      if (!title) return;
 
-      // 링크 생성
+      // --- 디버깅 로그 추가 ---
+      console.log(`[${siteId}] - 게시물 정보:`, {
+          articleNo: articleNo || '게시물 번호 없음',
+          title: title || '제목 없음',
+          href: $el.attr('href') || '링크 없음'
+      });
+      // --- 여기까지 ---
+
+      if (!articleNo || !title) {
+        // articleNo나 title이 없으면 건너뜁니다.
+        return;
+      }
+
       let link = $el.attr('href') || '';
       if (link && !link.startsWith('http')) {
         link = new URL(link, config.url).href;
       }
 
-      // 게시물 번호로 중요공지 판단
       const postNumberElement = $el.closest('tr').find('.td-num');
       const postNumber = postNumberElement.text().trim();
       const isImportant = isNaN(parseInt(postNumber));
@@ -207,6 +217,7 @@ class CrawlerService {
       });
     });
 
+    console.log(`[${siteId}] 파싱 완료: ${posts.length}개의 유효한 게시물을 수집했습니다.`);
     return posts;
   }
 
