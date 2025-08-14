@@ -159,8 +159,8 @@ class SystemStatusMonitor {
         Object.entries(sites).forEach(([siteId, siteData]) => {
             const row = document.createElement('tr');
             
-            const statusClass = siteData.lastCrawledAt ? 'success' : 'warning';
-            const lastCrawled = this.formatDateTime(siteData.lastCrawledAt);
+            const statusClass = siteData.updatedAt ? 'success' : 'warning';
+            const lastCrawled = this.formatDateTime(siteData.updatedAt);
             
             row.innerHTML = `
                 <td><span class="site-status ${statusClass}"></span></td>
