@@ -347,17 +347,32 @@ class NotificationApp {
             return;
         }
 
+        // 1. 서비스 워커를 지원하는지 확인
+        if (!('serviceWorker' in navigator)) {
+            this.showError('이 브라우저는 알림 기능을 지원하지 않습니다.');
+            return;
+        }
+        
         try {
-            new Notification('테스트 알림', {
+            // 2. 현재 등록된 서비스 워커 가져오기
+            const registration = await navigator.serviceWorker.getRegistration();
+            if (!registration) {
+                this.showError('서비스 워커가 활성화되지 않았습니다. 페이지를 새로고침 해주세요.');
+                return;
+            }
+
+            // 3. 서비스 워커를 통해 알림 표시 요청
+            await registration.showNotification('테스트 알림', {
                 body: 'CUK 공지사항 알리미가 정상적으로 작동하고 있습니다!',
                 icon: '/icon-192.png',
                 badge: '/badge-72.png'
             });
-            
+
             this.showSuccess('테스트 알림이 발송되었습니다!');
+
         } catch (error) {
             console.error('테스트 알림 실패:', error);
-            this.showError('테스트 알림 발송에 실패했습니다.');
+            this.showError('테스트 알림 발송에 실패했습니다. 알림 권한을 다시 확인해주세요.');
         }
     }
 
