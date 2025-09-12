@@ -160,7 +160,7 @@ class SystemStatusMonitor {
             const row = document.createElement('tr');
             
             const statusClass = siteData.lastCrawledAt ? 'success' : 'warning';
-            const lastCrawled = this.formatDateTime(siteData.lastCrawledAt);
+            const lastCrawled = this.formatDateTime(siteData.updatedAt);
             
             row.innerHTML = `
                 <td><span class="site-status ${statusClass}"></span></td>
