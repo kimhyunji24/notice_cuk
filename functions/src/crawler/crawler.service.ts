@@ -126,7 +126,11 @@ class CrawlerService {
 
     // 현재 게시물들 파싱
     const currentPosts = this.parsePosts($, siteConfig, siteId);
-    
+        
+    // ----- 👇 추가할 코드 -----
+    console.log(`[${siteId}] DB에 저장된 번호:`, processedNos);
+    console.log(`[${siteId}] 현재 파싱된 번호:`, currentPosts.map(p => p.no));
+    // ----- 👆 여기까지 -----
     if (currentPosts.length === 0) {
       console.warn(`⚠️ [${siteId}] 게시글을 찾을 수 없습니다`);
       return { siteId, success: true, newPostsCount: 0 };
@@ -141,13 +145,13 @@ class CrawlerService {
       // 게시물 번호 순으로 정렬 (오래된 것부터)
       const sortedNewPosts = newPosts.sort((a, b) => parseInt(a.no) - parseInt(b.no));
 
-      // 알림 발송
+      // 알림 발송 ㅎㅎ
       for (const post of sortedNewPosts) {
         await this.sendNotificationForPost(post);
       }
     }
 
-    // 크롤링 상태 업데이트
+    // 크롤링 상태 업데이트  
     await crawledPostService.updateCrawledPost(siteId, {
       processedNos: currentPosts.map(p => p.no),
       lastTitle: currentPosts[0]?.title || null,
@@ -229,6 +233,9 @@ private parsePosts($: cheerio.CheerioAPI, config: any, siteId: string): Post[] {
       // 해당 사이트를 구독한 사용자들의 토큰 가져오기
       const subscribers = await subscriptionService.getSubscribersForSite(post.siteId);
 
+      // ----- 👇 추가할 코드 -----
+      console.log(`[${post.siteId}] 새 글 "${post.title}"의 구독자:`, subscribers);
+      // ----- 👆 여기까지 -----
       if (subscribers.length === 0) {
         console.log(`📭 [${post.siteId}] 구독자가 없습니다`);
         return;
@@ -247,6 +254,14 @@ private parsePosts($: cheerio.CheerioAPI, config: any, siteId: string): Post[] {
           isImportant: post.isImportant
         }
       };
+
+
+      // ----- 👇 추가할 코드 -----
+      console.log(`[${post.siteId}] 🚨 FCM 발송 직전!`, {
+        tokens: subscribers,
+        notification: notificationData,
+      });
+      // ----- 👆 여기까지 -----
 
       // FCM 알림 발송
       await fcmService.sendToMultiple(subscribers, notificationData);
