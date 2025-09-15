@@ -113,13 +113,20 @@ class NotificationApp {
 
     async loadSites() {
         try {
+            console.log('📚 사이트 목록 로드 시도:', apiConfig.baseUrl);
+            
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), apiConfig.timeout);
+
             const response = await fetch(`${apiConfig.baseUrl}/sites`, {
                 method: 'GET',
                 headers: {
                     'Content-Type': 'application/json'
                 },
-                timeout: apiConfig.timeout
+                signal: controller.signal
             });
+
+            clearTimeout(timeoutId);
 
             if (!response.ok) {
                 throw new Error(`HTTP ${response.status}: ${response.statusText}`);
@@ -145,7 +152,14 @@ class NotificationApp {
             
         } catch (error) {
             console.error('사이트 목록 로드 실패:', error);
-            this.showError('학과 목록을 불러오는데 실패했습니다. 네트워크 연결을 확인해주세요.');
+            
+            if (error.name === 'AbortError') {
+                this.showError('요청 시간이 초과되었습니다. 네트워크 연결을 확인해주세요.');
+            } else if (error.message.includes('HTTP 5')) {
+                this.showError('서버에 일시적인 문제가 있습니다. 잠시 후 다시 시도해주세요.');
+            } else {
+                this.showError('학과 목록을 불러오는데 실패했습니다. 네트워크 연결을 확인해주세요.');
+            }
             
             // 실패 시 기본 목록 표시
             this.loadFallbackSites();

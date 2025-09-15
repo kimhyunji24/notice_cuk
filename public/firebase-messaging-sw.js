@@ -2,16 +2,27 @@
 
 importScripts('https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js');
 importScripts('https://www.gstatic.com/firebasejs/8.10.1/firebase-messaging.js');
-// Firebase 설정 (실제 환경에서는 환경변수에서 가져와야 함)
-const firebaseConfig = {
-  apiKey: "AIzaSyDZvIopijEsI9MrC-WHSqS1G9arX_U5m5Y",
-  authDomain: "cuknotice.firebaseapp.com",
-  projectId: "cuknotice",
-  storageBucket: "cuknotice.firebasestorage.app",
-  messagingSenderId: "218411557852",
-  appId: "1:218411557852:web:896358449c61ee029ce519",
-  measurementId: "G-84PX1VTECE"
-};
+importScripts('/config.js');
+
+// 환경별 Firebase 설정 동적 로드
+let firebaseConfig;
+try {
+  const envConfig = new EnvironmentConfig();
+  firebaseConfig = envConfig.getFirebaseConfig();
+  console.log('[SW] Firebase 설정 로드 완료:', firebaseConfig.projectId);
+} catch (error) {
+  console.error('[SW] Firebase 설정 로드 실패, 기본값 사용:', error);
+  // 기본값 (프로덕션)
+  firebaseConfig = {
+    apiKey: "AIzaSyDZvIopijEsI9MrC-WHSqS1G9arX_U5m5Y",
+    authDomain: "cuknotice.firebaseapp.com",
+    projectId: "cuknotice",
+    storageBucket: "cuknotice.firebasestorage.app",
+    messagingSenderId: "218411557852",
+    appId: "1:218411557852:web:896358449c61ee029ce519",
+    measurementId: "G-84PX1VTECE"
+  };
+}
 
 
 // Firebase 초기화
