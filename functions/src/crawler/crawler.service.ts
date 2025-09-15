@@ -133,6 +133,7 @@ class CrawlerService {
     if (currentPosts.length === 0) {
       console.warn(`⚠️ [${siteId}] 게시글을 찾을 수 없습니다. HTML 구조를 확인하세요.`);
       console.log(`[${siteId}] 사용된 셀렉터: ${siteConfig.selector}`);
+      console.log(`[${siteId}] 사이트 URL: ${siteConfig.url}`);
       
       // HTML 구조 디버깅을 위한 추가 정보
       const allElements = $(siteConfig.selector);
@@ -140,6 +141,32 @@ class CrawlerService {
       
       if (allElements.length > 0) {
         console.log(`[${siteId}] 첫 번째 요소 HTML:`, allElements.first().html());
+      } else {
+        // 대체 셀렉터들을 시도해보기
+        const alternativeSelectors = [
+          'a[href*="articleNo"]',
+          'a[href*="no="]',
+          '.board-list a',
+          '.list-item a',
+          'tbody tr a',
+          '.title a',
+          '.subject a'
+        ];
+        
+        for (const altSelector of alternativeSelectors) {
+          const altElements = $(altSelector);
+          if (altElements.length > 0) {
+            console.log(`[${siteId}] 대체 셀렉터 "${altSelector}"로 ${altElements.length}개 요소 발견`);
+            console.log(`[${siteId}] 대체 셀렉터 첫 번째 요소:`, altElements.first().html()?.substring(0, 200));
+            break;
+          }
+        }
+        
+        // 전체 HTML의 일부를 로그로 출력 (디버깅용)
+        const bodyText = $('body').html();
+        if (bodyText) {
+          console.log(`[${siteId}] HTML 길이: ${bodyText.length}, 앞부분:`, bodyText.substring(0, 500));
+        }
       }
       
       return { siteId, success: true, newPostsCount: 0 };
@@ -154,13 +181,26 @@ class CrawlerService {
         console.log(`  - 새 글: ${post.no} | ${post.title}`);
       });
 
-      // 게시물 번호 순으로 정렬 (오래된 것부터)
-      const sortedNewPosts = newPosts.sort((a, b) => parseInt(a.no) - parseInt(b.no));
+      // 게시물 번호 순으로 정렬 (해시 기반 ID는 제외)
+      const sortedNewPosts = newPosts.sort((a, b) => {
+        const aNum = a.no.startsWith('hash_') ? 999999 : parseInt(a.no) || 999999;
+        const bNum = b.no.startsWith('hash_') ? 999999 : parseInt(b.no) || 999999;
+        return aNum - bNum;
+      });
 
-      // 알림 발송
+      // 알림 발송 (에러가 발생해도 다른 게시물 처리 계속)
+      let successCount = 0;
       for (const post of sortedNewPosts) {
-        await this.sendNotificationForPost(post);
+        try {
+          await this.sendNotificationForPost(post);
+          successCount++;
+        } catch (error) {
+          console.error(`❌ [${siteId}] 게시물 "${post.title}" 알림 발송 실패:`, error);
+          // 개별 게시물 알림 실패는 전체 크롤링을 중단시키지 않음
+        }
       }
+      
+      console.log(`📢 [${siteId}] 알림 발송 완료: ${successCount}/${newPosts.length}`);
     } else {
       console.log(`📭 [${siteId}] 새 글 없음`);
     }
@@ -187,6 +227,36 @@ class CrawlerService {
    */
   private delay(ms: number): Promise<void> {
     return new Promise(resolve => setTimeout(resolve, ms));
+  }
+
+  /**
+   * 제목과 텍스트를 기반으로 일관성 있는 ID를 생성합니다
+   */
+  private generateConsistentId(text: string): string | null {
+    if (!text || text.trim().length < 5) {
+      return null;
+    }
+
+    // 텍스트를 정규화하고 해시 생성
+    const normalized = text
+      .trim()
+      .replace(/\s+/g, ' ')
+      .replace(/[^\w\s가-힣]/g, '')
+      .substring(0, 100);
+
+    if (normalized.length < 5) {
+      return null;
+    }
+
+    // 간단한 해시 함수 (일관성 있는 결과 보장)
+    let hash = 0;
+    for (let i = 0; i < normalized.length; i++) {
+      const char = normalized.charCodeAt(i);
+      hash = ((hash << 5) - hash) + char;
+      hash = hash & hash; // 32비트 정수로 변환
+    }
+
+    return `hash_${Math.abs(hash).toString(36)}`;
   }
 
   /**
@@ -222,6 +292,16 @@ class CrawlerService {
       if (!articleNo || !title) {
         console.warn(`[${siteId}] ${index + 1}번째 게시물 건너뜀: articleNo=${articleNo}, title=${title}`);
         return;
+      }
+
+      // 해시 기반 ID인 경우 추가 검증
+      if (articleNo.startsWith('hash_')) {
+        // 동일한 해시 ID가 이미 존재하는지 확인
+        const existingPost = posts.find(p => p.no === articleNo);
+        if (existingPost) {
+          console.warn(`[${siteId}] 중복된 해시 ID 발견, 건너뜀: ${articleNo}`);
+          return;
+        }
       }
 
       // 중요 공지 판단 (공지, 중요, 긴급 등의 키워드 또는 번호가 아닌 경우)
@@ -294,10 +374,15 @@ class CrawlerService {
       return match[1];
     }
 
-    // 방법 5: 인덱스 기반 (최후의 수단)
-    const fallbackNo = Date.now().toString() + Math.random().toString(36).substr(2, 5);
-    console.warn(`[${siteId}] 게시물 번호를 찾을 수 없어 임시 번호 생성: ${fallbackNo}`);
-    return fallbackNo;
+    // 방법 5: 제목 기반 해시 (일관성 있는 ID 생성)
+    const titleHash = this.generateConsistentId(($el as any).text().trim());
+    if (titleHash) {
+      console.warn(`[${siteId}] 게시물 번호를 찾을 수 없어 제목 해시 사용: ${titleHash}`);
+      return titleHash;
+    }
+
+    console.error(`[${siteId}] 게시물 번호 추출 완전 실패 - 건너뜀`);
+    return null;
   }
 
   /**
@@ -384,6 +469,93 @@ class CrawlerService {
                            ($el as any).hasClass('important');
 
     return hasImportantKeyword || hasSpecialStyle;
+  }
+
+  /**
+   * 단일 사이트 크롤링 테스트 (디버깅용)
+   */
+  async testCrawlSite(siteId: string): Promise<{
+    success: boolean;
+    foundElements: number;
+    sampleElements: string[];
+    posts: Post[];
+    error?: string;
+  }> {
+    console.log(`🧪 [${siteId}] 테스트 크롤링 시작`);
+    
+    const siteConfig = SITE_CONFIGS[siteId];
+    if (!siteConfig) {
+      return { success: false, foundElements: 0, sampleElements: [], posts: [], error: 'Site not found' };
+    }
+
+    try {
+      const { data } = await axios.get(siteConfig.url, {
+        timeout: this.REQUEST_TIMEOUT,
+        headers: {
+          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+        }
+      });
+
+      const $ = cheerio.load(data);
+      
+      // 원래 셀렉터로 찾기
+      const originalElements = $(siteConfig.selector);
+      console.log(`🧪 [${siteId}] 원래 셀렉터 "${siteConfig.selector}": ${originalElements.length}개 요소`);
+      
+      // 대체 셀렉터들 시도
+      const alternativeSelectors = [
+        'a[href*="articleNo"]',
+        'a[href*="no="]',
+        '.board-list a',
+        '.list-item a',
+        'tbody tr a',
+        '.title a',
+        '.subject a',
+        'a[class*="title"]',
+        'a[class*="subject"]'
+      ];
+      
+      const sampleElements: string[] = [];
+      let bestSelector = siteConfig.selector;
+      let maxElements = originalElements.length;
+      
+      for (const selector of alternativeSelectors) {
+        const elements = $(selector);
+        console.log(`🧪 [${siteId}] 대체 셀렉터 "${selector}": ${elements.length}개 요소`);
+        
+        if (elements.length > maxElements) {
+          bestSelector = selector;
+          maxElements = elements.length;
+        }
+        
+        if (elements.length > 0 && sampleElements.length < 3) {
+          elements.slice(0, 3).each((i, el) => {
+            sampleElements.push($(el).html()?.substring(0, 200) || '');
+          });
+        }
+      }
+      
+      // 최적 셀렉터로 게시물 파싱
+      const posts = this.parsePosts($, { ...siteConfig, selector: bestSelector }, siteId);
+      
+      return {
+        success: true,
+        foundElements: maxElements,
+        sampleElements,
+        posts,
+        error: undefined
+      };
+
+    } catch (error: any) {
+      console.error(`🧪 [${siteId}] 테스트 크롤링 실패:`, error.message);
+      return {
+        success: false,
+        foundElements: 0,
+        sampleElements: [],
+        posts: [],
+        error: error.message
+      };
+    }
   }
 
   /**
