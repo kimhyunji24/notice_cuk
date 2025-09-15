@@ -2,6 +2,7 @@ import { Request, Response, NextFunction } from 'express';
 import { crawledPostService } from '../../services/crawled-post.service';
 import { subscriptionService } from '../../services/subscription.service';
 import { monitoringService } from '../../services/monitoring.service';
+import { crawlerService } from '../../crawler/crawler.service';
 import { ApiResponse } from '../api.types';
 import { config, environment } from '../../config/environment';
 
@@ -96,6 +97,46 @@ export class StatusController {
         timestamp: new Date().toISOString(),
         error: error?.message || 'Unknown error'
       });
+    }
+  }
+
+  /**
+   * 특정 사이트의 크롤링을 테스트합니다 (디버깅용)
+   */
+  async testCrawling(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const { siteId } = req.params;
+      
+      if (!siteId) {
+        res.status(400).json({
+          success: false,
+          error: 'siteId 파라미터가 필요합니다.',
+          timestamp: new Date().toISOString()
+        });
+        return;
+      }
+
+      console.log(`🧪 크롤링 테스트 요청: ${siteId}`);
+      
+      const testResult = await crawlerService.testCrawlSite(siteId);
+      
+      const response: ApiResponse<any> = {
+        success: testResult.success,
+        data: {
+          siteId,
+          foundElements: testResult.foundElements,
+          sampleElements: testResult.sampleElements,
+          posts: testResult.posts,
+          error: testResult.error,
+          timestamp: new Date().toISOString()
+        }
+      };
+
+      res.json(response);
+
+    } catch (error: any) {
+      console.error('크롤링 테스트 오류:', error);
+      next(error);
     }
   }
 

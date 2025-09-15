@@ -38,6 +38,9 @@ app.get('/sites/category/:category', sitesController.getSitesByCategory);
 // Health check
 app.get('/health', statusController.getHealthCheck);
 
+// 디버깅 엔드포인트 (개발/테스트용)
+app.get('/test/crawl/:siteId', statusController.testCrawling);
+
 // 간단한 ping 엔드포인트
 app.get('/ping', (req, res) => {
   res.json({
