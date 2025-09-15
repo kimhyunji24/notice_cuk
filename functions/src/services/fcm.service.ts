@@ -206,21 +206,50 @@ class FCMService {
    * 여러 유효하지 않은 토큰들을 제거합니다
    */
   private async removeInvalidTokens(tokens: string[]): Promise<void> {
-    try {
-      const batch = admin.firestore().batch();
-      const db = admin.firestore();
-      
-      tokens.forEach(token => {
-        const docRef = db.collection('subscriptions').doc(token);
-        batch.delete(docRef);
-      });
+    if (tokens.length === 0) return;
 
-      await batch.commit();
-      console.log(`🗑️ 유효하지 않은 토큰 ${tokens.length}개 제거 완료`);
+    try {
+      const db = admin.firestore();
+      const batchSize = 500; // Firestore 배치 제한
+
+      // 큰 배치를 작은 단위로 나누어 처리
+      for (let i = 0; i < tokens.length; i += batchSize) {
+        const batch = db.batch();
+        const currentBatch = tokens.slice(i, i + batchSize);
+        
+        currentBatch.forEach(token => {
+          const docRef = db.collection('subscriptions').doc(token);
+          batch.delete(docRef);
+        });
+
+        await batch.commit();
+        console.log(`🗑️ 유효하지 않은 토큰 ${currentBatch.length}개 제거 완료 (${i + currentBatch.length}/${tokens.length})`);
+      }
       
     } catch (error) {
       console.error(`❌ 토큰 일괄 제거 실패:`, error);
+      // 개별 삭제로 재시도
+      await this.removeTokensIndividually(tokens);
     }
+  }
+
+  /**
+   * 토큰을 개별적으로 제거합니다 (배치 실패 시 사용)
+   */
+  private async removeTokensIndividually(tokens: string[]): Promise<void> {
+    console.log(`🔄 개별 토큰 삭제 시작: ${tokens.length}개`);
+    
+    let successCount = 0;
+    for (const token of tokens) {
+      try {
+        await admin.firestore().collection('subscriptions').doc(token).delete();
+        successCount++;
+      } catch (error) {
+        console.error(`❌ 개별 토큰 삭제 실패: ${token.substring(0, 10)}...`, error);
+      }
+    }
+    
+    console.log(`✅ 개별 토큰 삭제 완료: ${successCount}/${tokens.length}`);
   }
 
   /**
