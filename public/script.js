@@ -21,7 +21,7 @@ class NotificationApp {
     }
 
     initializeElements() {
-        // DOM 요소들
+        // 정적 DOM 요소들 (항상 존재)
         this.permissionCard = document.getElementById('permission-card');
         this.subscriptionCard = document.getElementById('subscription-card');
         this.loadingState = document.getElementById('loading-state');
@@ -38,28 +38,56 @@ class NotificationApp {
         this.testNotificationBtn = document.getElementById('test-notification');
         this.manageSubscriptionsBtn = document.getElementById('manage-subscriptions');
         this.subscriptionList = document.getElementById('subscription-list');
-        this.editSubscriptionsBtn = document.getElementById('edit-subscriptions');
-        this.saveSubscriptionsBtn = document.getElementById('save-subscriptions');
-        this.cancelEditBtn = document.getElementById('cancel-edit');
         
         this.filterTabs = document.querySelectorAll('.filter-tab');
+        
+        // 동적 요소들 (나중에 생성됨) - null로 초기화
+        this.editSubscriptionsBtn = null;
+        this.saveSubscriptionsBtn = null;
+        this.cancelEditBtn = null;
     }
 
     attachEventListeners() {
-        this.enableNotificationsBtn.addEventListener('click', () => this.requestNotificationPermission());
-        this.searchInput.addEventListener('input', (e) => this.filterSites(e.target.value));
-        this.saveBtn.addEventListener('click', () => this.saveSubscription());
-        this.selectAllBtn.addEventListener('click', () => this.selectAllSites());
-        this.clearAllBtn.addEventListener('click', () => this.clearAllSites());
-        this.testNotificationBtn.addEventListener('click', () => this.sendTestNotification());
-        this.manageSubscriptionsBtn.addEventListener('click', () => this.showSubscriptionManagement());
-        this.editSubscriptionsBtn.addEventListener('click', () => this.startEditMode());
-        this.saveSubscriptionsBtn.addEventListener('click', () => this.saveSubscriptionChanges());
-        this.cancelEditBtn.addEventListener('click', () => this.cancelEditMode());
+        // 정적 요소들 (항상 존재)
+        if (this.enableNotificationsBtn) {
+            this.enableNotificationsBtn.addEventListener('click', () => this.requestNotificationPermission());
+        }
+        if (this.searchInput) {
+            this.searchInput.addEventListener('input', (e) => this.filterSites(e.target.value));
+        }
+        if (this.saveBtn) {
+            this.saveBtn.addEventListener('click', () => this.saveSubscription());
+        }
+        if (this.selectAllBtn) {
+            this.selectAllBtn.addEventListener('click', () => this.selectAllSites());
+        }
+        if (this.clearAllBtn) {
+            this.clearAllBtn.addEventListener('click', () => this.clearAllSites());
+        }
+        if (this.testNotificationBtn) {
+            this.testNotificationBtn.addEventListener('click', () => this.sendTestNotification());
+        }
+        if (this.manageSubscriptionsBtn) {
+            this.manageSubscriptionsBtn.addEventListener('click', () => this.showSubscriptionManagement());
+        }
         
-        this.filterTabs.forEach(tab => {
-            tab.addEventListener('click', (e) => this.filterByCategory(e.target.dataset.category));
-        });
+        // 동적 요소들 (나중에 생성될 수 있음) - null 체크 필요
+        if (this.editSubscriptionsBtn) {
+            this.editSubscriptionsBtn.addEventListener('click', () => this.startEditMode());
+        }
+        if (this.saveSubscriptionsBtn) {
+            this.saveSubscriptionsBtn.addEventListener('click', () => this.saveSubscriptionChanges());
+        }
+        if (this.cancelEditBtn) {
+            this.cancelEditBtn.addEventListener('click', () => this.cancelEditMode());
+        }
+        
+        // 필터 탭들
+        if (this.filterTabs) {
+            this.filterTabs.forEach(tab => {
+                tab.addEventListener('click', (e) => this.filterByCategory(e.target.dataset.category));
+            });
+        }
     }
 
     async initialize() {
@@ -807,10 +835,28 @@ class NotificationApp {
             </div>
         `;
 
-        // 이벤트 리스너 재등록
+        // 동적 요소 이벤트 리스너 재등록
+        this.attachDynamicEventListeners();
+    }
+
+    // 동적으로 생성되는 요소들의 이벤트 리스너를 안전하게 등록
+    attachDynamicEventListeners() {
+        // edit-subscriptions 버튼
         this.editSubscriptionsBtn = document.getElementById('edit-subscriptions');
         if (this.editSubscriptionsBtn) {
             this.editSubscriptionsBtn.addEventListener('click', () => this.startEditMode());
+        }
+
+        // save-subscriptions 버튼
+        this.saveSubscriptionsBtn = document.getElementById('save-subscriptions');
+        if (this.saveSubscriptionsBtn) {
+            this.saveSubscriptionsBtn.addEventListener('click', () => this.saveSubscriptionChanges());
+        }
+
+        // cancel-edit 버튼
+        this.cancelEditBtn = document.getElementById('cancel-edit');
+        if (this.cancelEditBtn) {
+            this.cancelEditBtn.addEventListener('click', () => this.cancelEditMode());
         }
     }
 
