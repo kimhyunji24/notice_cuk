@@ -625,21 +625,45 @@ class NotificationApp {
             // data.data가 배열인지 확인하고, 다른 형식도 처리
             let sitesArray = null;
             
+            console.log('🔍 API 응답 data.data 타입:', typeof data.data);
+            console.log('🔍 API 응답 data.data 내용:', data.data);
+            
             if (Array.isArray(data.data)) {
                 sitesArray = data.data;
+                console.log('✅ data.data는 배열입니다.');
             } else if (data.data && typeof data.data === 'object') {
+                console.log('🔄 data.data는 객체입니다. 배열로 변환 시도...');
+                
                 // 객체인 경우 값들을 배열로 변환
                 if (Array.isArray(data.data.sites)) {
                     sitesArray = data.data.sites;
+                    console.log('✅ data.data.sites 배열 발견');
                 } else if (Array.isArray(data.data.list)) {
                     sitesArray = data.data.list;
+                    console.log('✅ data.data.list 배열 발견');
                 } else if (Array.isArray(data.data.items)) {
                     sitesArray = data.data.items;
+                    console.log('✅ data.data.items 배열 발견');
                 } else {
                     // 객체의 값들을 배열로 변환
-                    sitesArray = Object.values(data.data);
+                    const objectValues = Object.values(data.data);
+                    console.log('🔄 Object.values() 결과:', objectValues);
+                    
+                    // 값들이 유효한 사이트 객체인지 확인
+                    const validSites = objectValues.filter(value => 
+                        value && 
+                        typeof value === 'object' && 
+                        (value.id || value.name || value.title)
+                    );
+                    
+                    if (validSites.length > 0) {
+                        sitesArray = validSites;
+                        console.log('✅ 유효한 사이트 객체들 발견:', validSites.length, '개');
+                    } else {
+                        console.warn('⚠️ 유효한 사이트 객체를 찾을 수 없습니다.');
+                        throw new Error('사이트 데이터가 배열 형식이 아닙니다.');
+                    }
                 }
-                console.log('🔄 객체를 배열로 변환:', sitesArray);
             } else {
                 console.warn('⚠️ data.data가 배열이 아닙니다:', typeof data.data, data.data);
                 throw new Error('사이트 데이터가 배열 형식이 아닙니다.');
@@ -653,23 +677,36 @@ class NotificationApp {
             }
             
             // 사이트 데이터 변환
-            this.allSites = sitesArray.reduce((acc, site) => {
+            console.log('🔄 사이트 데이터 변환 시작, 총', sitesArray.length, '개 항목');
+            
+            this.allSites = sitesArray.reduce((acc, site, index) => {
+                console.log(`🔍 사이트 ${index + 1} 처리:`, site);
+                
                 // 각 사이트 객체 검증
                 if (!site || typeof site !== 'object') {
                     console.warn('⚠️ 잘못된 사이트 객체:', site);
                     return acc;
                 }
                 
-                if (!site.id) {
-                    console.warn('⚠️ ID가 없는 사이트:', site);
+                // ID 생성 (id가 없으면 name이나 title을 사용)
+                let siteId = site.id || site.name || site.title || `site_${index}`;
+                
+                // ID가 여전히 없으면 건너뛰기
+                if (!siteId) {
+                    console.warn('⚠️ ID를 생성할 수 없는 사이트:', site);
                     return acc;
                 }
                 
-                acc[site.id] = {
-                    id: site.id,
-                    name: site.name || '이름 없음',
+                // ID를 안전한 문자열로 변환
+                siteId = String(siteId).replace(/[^a-zA-Z0-9_-]/g, '_');
+                
+                acc[siteId] = {
+                    id: siteId,
+                    name: site.name || site.title || '이름 없음',
                     category: site.category || 'general'
                 };
+                
+                console.log('✅ 사이트 추가됨:', siteId, '->', acc[siteId].name);
                 return acc;
             }, {});
             
