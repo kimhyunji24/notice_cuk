@@ -329,27 +329,73 @@ class NotificationApp {
     renderSites() {
         const sites = this.getFilteredSites();
         
+        if (sites.length === 0) {
+            this.sitesContainer.innerHTML = `
+                <div class="no-results">
+                    <p>검색 결과가 없습니다.</p>
+                    <p>다른 검색어나 필터를 시도해보세요.</p>
+                </div>
+            `;
+            return;
+        }
+        
         this.sitesContainer.innerHTML = sites.map(site => `
             <div class="site-item" data-site-id="${site.id}">
-                <label class="site-label">
-                    <input type="checkbox" class="site-checkbox" value="${site.id}">
-                    <span class="site-name">${site.name}</span>
-                    <span class="site-category">${this.getCategoryName(site.category)}</span>
-                </label>
+                <div class="site-checkbox">
+                    <input type="checkbox" id="site-${site.id}" class="site-checkbox-input" value="${site.id}">
+                    <label for="site-${site.id}" class="site-label">
+                        <span class="site-name">${site.name}</span>
+                        <span class="site-category">${this.getCategoryName(site.category)}</span>
+                    </label>
+                </div>
             </div>
         `).join('');
 
         // 체크박스 이벤트 리스너 추가
-        this.sitesContainer.querySelectorAll('.site-checkbox').forEach(checkbox => {
+        this.sitesContainer.querySelectorAll('.site-checkbox-input').forEach(checkbox => {
             checkbox.addEventListener('change', (e) => {
                 const siteId = e.target.value;
+                const siteItem = e.target.closest('.site-item');
+                
                 if (e.target.checked) {
                     this.selectedSites.add(siteId);
+                    if (siteItem) siteItem.classList.add('selected');
                 } else {
                     this.selectedSites.delete(siteId);
+                    if (siteItem) siteItem.classList.remove('selected');
                 }
                 this.updateSelectedCount();
             });
+        });
+        
+        // 전체 사이트 아이템에 클릭 이벤트 추가 (모바일 터치 경험 개선)
+        this.sitesContainer.querySelectorAll('.site-item').forEach(item => {
+            item.addEventListener('click', (e) => {
+                // 체크박스 자체를 클릭한 경우는 처리하지 않음
+                if (e.target.type === 'checkbox') return;
+                
+                const siteId = item.dataset.siteId;
+                const checkbox = item.querySelector(`input[value="${siteId}"]`);
+                
+                if (checkbox) {
+                    checkbox.checked = !checkbox.checked;
+                    
+                    // 체인지 이벤트 수동 발생
+                    const event = new Event('change');
+                    checkbox.dispatchEvent(event);
+                }
+            });
+        });
+
+        // 이미 선택된 사이트들 체크 상태로 표시
+        this.selectedSites.forEach(siteId => {
+            const checkbox = this.sitesContainer.querySelector(`input[value="${siteId}"]`);
+            const siteItem = checkbox?.closest('.site-item');
+            
+            if (checkbox) {
+                checkbox.checked = true;
+                if (siteItem) siteItem.classList.add('selected');
+            }
         });
 
         this.updateSelectedCount();
@@ -417,8 +463,15 @@ class NotificationApp {
     }
 
     updateSelectedCount() {
-        this.selectedCountSpan.textContent = this.selectedSites.size;
+        this.selectedCountSpan.textContent = `선택됨: ${this.selectedSites.size}개`;
         this.saveBtn.disabled = this.selectedSites.size === 0;
+        
+        // 선택된 항목이 있으면 저장 버튼 활성화 및 스타일 변경
+        if (this.selectedSites.size > 0) {
+            this.saveBtn.classList.add('btn-active');
+        } else {
+            this.saveBtn.classList.remove('btn-active');
+        }
     }
 
     async saveSubscription() {
@@ -532,9 +585,33 @@ class NotificationApp {
     }
 
     showMessage(message, type = 'info') {
+        // 메시지 영역이 숨겨져 있으면 표시
+        this.messageArea.classList.remove('hidden');
+        
         const messageDiv = document.createElement('div');
         messageDiv.className = `message ${type}`;
-        messageDiv.textContent = message;
+        
+        // 메시지 내용
+        const messageContent = document.createElement('span');
+        messageContent.textContent = message;
+        messageDiv.appendChild(messageContent);
+        
+        // 닫기 버튼
+        const closeButton = document.createElement('button');
+        closeButton.className = 'message-close';
+        closeButton.innerHTML = '×';
+        closeButton.setAttribute('aria-label', '메시지 닫기');
+        closeButton.onclick = () => {
+            if (messageDiv.parentNode) {
+                messageDiv.parentNode.removeChild(messageDiv);
+                
+                // 메시지가 더 이상 없으면 메시지 영역 숨기기
+                if (this.messageArea.children.length === 0) {
+                    this.messageArea.classList.add('hidden');
+                }
+            }
+        };
+        messageDiv.appendChild(closeButton);
         
         this.messageArea.appendChild(messageDiv);
         
@@ -542,6 +619,11 @@ class NotificationApp {
         setTimeout(() => {
             if (messageDiv.parentNode) {
                 messageDiv.parentNode.removeChild(messageDiv);
+                
+                // 메시지가 더 이상 없으면 메시지 영역 숨기기
+                if (this.messageArea.children.length === 0) {
+                    this.messageArea.classList.add('hidden');
+                }
             }
         }, 3000);
     }
@@ -806,6 +888,70 @@ async function registerServiceWorker() {
     }
 }
 
+// 모바일 네비게이션 처리
+class MobileNavigation {
+    constructor(app) {
+        this.app = app;
+        this.navHome = document.getElementById('nav-home');
+        this.navSubscribe = document.getElementById('nav-subscribe');
+        this.navManage = document.getElementById('nav-manage');
+        
+        this.setupEventListeners();
+    }
+    
+    setupEventListeners() {
+        if (this.navHome) {
+            this.navHome.addEventListener('click', (e) => {
+                e.preventDefault();
+                this.setActiveNav('home');
+                this.app.showSubscriptionForm();
+            });
+        }
+        
+        if (this.navSubscribe) {
+            this.navSubscribe.addEventListener('click', (e) => {
+                e.preventDefault();
+                this.setActiveNav('subscribe');
+                this.app.showSubscriptionForm();
+            });
+        }
+        
+        if (this.navManage) {
+            this.navManage.addEventListener('click', (e) => {
+                e.preventDefault();
+                this.setActiveNav('manage');
+                this.app.showSubscriptionManagement();
+            });
+        }
+        
+        // 푸터의 알림 테스트 버튼 이벤트 리스너 추가
+        const testNotificationFooter = document.getElementById('test-notification-footer');
+        if (testNotificationFooter) {
+            testNotificationFooter.addEventListener('click', (e) => {
+                e.preventDefault();
+                this.app.sendTestNotification();
+            });
+        }
+    }
+    
+    setActiveNav(navId) {
+        const navItems = document.querySelectorAll('.nav-item');
+        navItems.forEach(item => item.classList.remove('active'));
+        
+        const activeNav = document.getElementById(`nav-${navId}`);
+        if (activeNav) {
+            activeNav.classList.add('active');
+        }
+    }
+}
+
+// NotificationApp 클래스에 새 메소드 추가
+NotificationApp.prototype.showSubscriptionForm = function() {
+    this.subscriptionForm.classList.remove('hidden');
+    this.subscriptionList.classList.add('hidden');
+    document.querySelector('.subscription-edit-actions').classList.add('hidden');
+};
+
 // 앱 초기화
 document.addEventListener('DOMContentLoaded', async () => {
     try {
@@ -815,8 +961,12 @@ document.addEventListener('DOMContentLoaded', async () => {
         // 메인 앱 초기화
         const app = new NotificationApp();
         
+        // 모바일 네비게이션 초기화
+        const mobileNav = new MobileNavigation(app);
+        
         // 전역에서 접근 가능하도록 설정 (디버깅용)
         window.notificationApp = app;
+        window.mobileNav = mobileNav;
         
     } catch (error) {
         console.error('❌ 앱 시작 실패:', error);

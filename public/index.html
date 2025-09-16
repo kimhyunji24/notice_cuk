@@ -2,13 +2,15 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CUK 공지사항 알리미</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>알리알리</title>
     <link rel="stylesheet" href="style.css">
     <link rel="manifest" href="manifest.json">
     <link rel="icon" href="favicon.ico">
     <meta name="theme-color" content="#2563eb">
     <meta name="description" content="가톨릭대학교 학과 공지사항을 실시간으로 받아보세요">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 </head>
 <body>
     <div class="container">
@@ -16,7 +18,7 @@
             <div class="header-content">
                 <h1 class="title">
                     <span class="title-icon">🔔</span>
-                    CUK 공지사항 알리미
+                    알리알리
                 </h1>
                 <p class="subtitle">가톨릭대학교 학과 공지사항을 실시간으로 받아보세요</p>
             </div>
@@ -114,14 +116,34 @@
             <div class="footer-content">
                 <div class="footer-links">
                     <a href="status-enhanced.html" class="footer-link">크롤링 상태 확인</a>
-                    <a href="#" id="test-notification" class="footer-link">알림 테스트</a>
+                    <a href="#" id="test-notification-footer" class="footer-link">알림 테스트</a>
                 </div>
                 <p class="footer-text">
-                    © 2024 CUK 공지사항 알리미 | 
+                    © 2025 알리알리 | 
                     <a href="https://www.catholic.ac.kr" target="_blank" rel="noopener">가톨릭대학교</a>
                 </p>
             </div>
         </footer>
+        
+        <!-- 모바일 하단 네비게이션 -->
+        <nav class="bottom-nav">
+            <a href="#" class="nav-item active" id="nav-home">
+                <span class="nav-icon">🏠</span>
+                <span>홈</span>
+            </a>
+            <a href="#" class="nav-item" id="nav-subscribe">
+                <span class="nav-icon">🔔</span>
+                <span>구독</span>
+            </a>
+            <a href="#" class="nav-item" id="nav-manage">
+                <span class="nav-icon">📋</span>
+                <span>관리</span>
+            </a>
+            <a href="status-enhanced.html" class="nav-item">
+                <span class="nav-icon">📊</span>
+                <span>상태</span>
+            </a>
+        </nav>
     </div>
 
     <!-- Firebase v9+ 모듈러 SDK (공식 문서 권장 방식) -->

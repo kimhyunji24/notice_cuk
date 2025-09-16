@@ -1,14 +1,20 @@
 {
-  "name": "CUK 공지사항 알리미",
-  "short_name": "CUK 알리미",
+  "name": "알리알리",
+  "short_name": "알리알리",
   "description": "가톨릭대학교 학과 공지사항을 실시간으로 받아보세요",
-  "start_url": "/",
+  "start_url": "/?source=pwa",
   "display": "standalone",
   "background_color": "#ffffff",
   "theme_color": "#2563eb",
   "orientation": "portrait-primary",
   "categories": ["education", "productivity"],
   "lang": "ko-KR",
+  "prefer_related_applications": false,
+  "display_override": ["window-controls-overlay", "standalone"],
+  "handle_links": "preferred",
+  "launch_handler": {
+    "client_mode": ["navigate-existing", "auto"]
+  },
   "icons": [
     {
       "src": "icon-72.png",
@@ -54,10 +60,22 @@
   ],
   "shortcuts": [
     {
+      "name": "구독 관리",
+      "short_name": "구독",
+      "description": "내 구독 목록을 관리합니다",
+      "url": "/?action=manage",
+      "icons": [
+        {
+          "src": "icon-192.png",
+          "sizes": "192x192"
+        }
+      ]
+    },
+    {
       "name": "크롤링 상태",
       "short_name": "상태",
       "description": "각 학과의 크롤링 상태를 확인합니다",
-      "url": "/status.html",
+      "url": "/status-enhanced.html",
       "icons": [
         {
           "src": "icon-192.png",
@@ -72,14 +90,26 @@
       "sizes": "1280x720",
       "type": "image/png",
       "form_factor": "wide",
-      "label": "CUK 공지사항 알리미 메인 화면"
+      "label": "알리알리 메인 화면"
     },
     {
       "src": "screenshot-narrow.png", 
       "sizes": "640x1136",
       "type": "image/png",
       "form_factor": "narrow",
-      "label": "모바일에서의 CUK 공지사항 알리미"
+      "label": "모바일에서의 알리알리"
     }
-  ]
+  ],
+  "edge_side_panel": {
+    "preferred_width": 400
+  },
+  "share_target": {
+    "action": "/share-target",
+    "method": "GET",
+    "params": {
+      "title": "title",
+      "text": "text",
+      "url": "url"
+    }
+  }
 }
