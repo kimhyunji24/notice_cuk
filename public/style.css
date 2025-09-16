@@ -827,6 +827,115 @@ body {
     }
 }
 
+/* 토큰 대화상자 */
+.token-dialog {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 2000;
+    padding: 1rem;
+}
+
+.token-dialog-content {
+    background-color: var(--surface-color);
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow-lg);
+    width: 100%;
+    max-width: 500px;
+    max-height: 90vh;
+    overflow-y: auto;
+    animation: fadeIn 0.3s ease-out;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.token-dialog-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.token-dialog-header h3 {
+    margin: 0;
+    font-size: 1.25rem;
+    font-weight: 600;
+}
+
+.token-dialog-close {
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    cursor: pointer;
+    color: var(--text-secondary);
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    margin: -0.5rem;
+}
+
+.token-dialog-close:active {
+    background-color: rgba(0, 0, 0, 0.05);
+}
+
+.token-display {
+    padding: 1rem;
+}
+
+.token-info {
+    margin-bottom: 1rem;
+    color: var(--text-secondary);
+    font-size: 0.875rem;
+}
+
+.token-text {
+    background-color: #f1f5f9;
+    padding: 1rem;
+    border-radius: 0.5rem;
+    font-family: monospace;
+    word-break: break-all;
+    margin-bottom: 0.5rem;
+    font-size: 0.875rem;
+    border: 1px solid var(--border-color);
+    white-space: pre-wrap;
+}
+
+.token-length {
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+    text-align: right;
+    margin-bottom: 1rem;
+}
+
+.token-actions {
+    display: flex;
+    gap: 1rem;
+    padding: 0 1rem 1rem;
+}
+
+.token-actions .btn {
+    flex: 1;
+}
+
 /* 유틸리티 클래스 */
 .hidden {
     display: none !important;

@@ -262,6 +262,88 @@ class NotificationApp {
             throw error;
         }
     }
+    
+    // 디바이스 토큰을 알림창으로 표시
+    showDeviceToken() {
+        if (!this.fcmToken) {
+            this.showError('FCM 토큰이 없습니다. 알림 권한을 먼저 허용해주세요.');
+            return;
+        }
+        
+        // 토큰 복사 버튼이 있는 알림창 생성
+        const tokenDialog = document.createElement('div');
+        tokenDialog.className = 'token-dialog';
+        
+        const dialogContent = document.createElement('div');
+        dialogContent.className = 'token-dialog-content';
+        
+        const dialogHeader = document.createElement('div');
+        dialogHeader.className = 'token-dialog-header';
+        dialogHeader.innerHTML = `
+            <h3>디바이스 토큰</h3>
+            <button class="token-dialog-close">×</button>
+        `;
+        
+        const tokenDisplay = document.createElement('div');
+        tokenDisplay.className = 'token-display';
+        
+        // 토큰을 더 읽기 쉽게 표시 (앞부분과 뒷부분만)
+        const shortToken = this.fcmToken.length > 40 ? 
+            `${this.fcmToken.substring(0, 20)}...${this.fcmToken.substring(this.fcmToken.length - 20)}` : 
+            this.fcmToken;
+            
+        tokenDisplay.innerHTML = `
+            <p class="token-info">이 토큰은 이 기기에서만 유효합니다. 디버깅 용도로만 사용하세요.</p>
+            <div class="token-text">${shortToken}</div>
+            <div class="token-length">토큰 길이: ${this.fcmToken.length}자</div>
+        `;
+        
+        const tokenActions = document.createElement('div');
+        tokenActions.className = 'token-actions';
+        
+        const copyButton = document.createElement('button');
+        copyButton.className = 'btn btn-primary';
+        copyButton.textContent = '토큰 복사';
+        copyButton.onclick = () => {
+            navigator.clipboard.writeText(this.fcmToken)
+                .then(() => {
+                    this.showSuccess('토큰이 클립보드에 복사되었습니다.');
+                    tokenDialog.remove();
+                })
+                .catch(err => {
+                    this.showError('토큰 복사 실패: ' + err.message);
+                });
+        };
+        
+        const fullTokenButton = document.createElement('button');
+        fullTokenButton.className = 'btn btn-secondary';
+        fullTokenButton.textContent = '전체 토큰 보기';
+        fullTokenButton.onclick = () => {
+            tokenDisplay.querySelector('.token-text').textContent = this.fcmToken;
+            fullTokenButton.style.display = 'none';
+        };
+        
+        tokenActions.appendChild(copyButton);
+        tokenActions.appendChild(fullTokenButton);
+        
+        dialogContent.appendChild(dialogHeader);
+        dialogContent.appendChild(tokenDisplay);
+        dialogContent.appendChild(tokenActions);
+        tokenDialog.appendChild(dialogContent);
+        
+        // 닫기 버튼 이벤트
+        const closeButton = dialogContent.querySelector('.token-dialog-close');
+        closeButton.onclick = () => tokenDialog.remove();
+        
+        // 배경 클릭 시 닫기
+        tokenDialog.onclick = (e) => {
+            if (e.target === tokenDialog) {
+                tokenDialog.remove();
+            }
+        };
+        
+        document.body.appendChild(tokenDialog);
+    }
 
     async loadSites() {
         try {
@@ -921,6 +1003,16 @@ class MobileNavigation {
                 e.preventDefault();
                 this.setActiveNav('manage');
                 this.app.showSubscriptionManagement();
+            });
+        }
+        
+        // 토큰 버튼 이벤트 리스너 추가
+        const navToken = document.getElementById('nav-token');
+        if (navToken) {
+            navToken.addEventListener('click', (e) => {
+                e.preventDefault();
+                this.setActiveNav('token');
+                this.app.showDeviceToken();
             });
         }
         
