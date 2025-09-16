@@ -622,21 +622,38 @@ class NotificationApp {
                 throw new Error('사이트 데이터가 없습니다.');
             }
             
-            // data.data가 배열인지 확인
-            if (!Array.isArray(data.data)) {
+            // data.data가 배열인지 확인하고, 다른 형식도 처리
+            let sitesArray = null;
+            
+            if (Array.isArray(data.data)) {
+                sitesArray = data.data;
+            } else if (data.data && typeof data.data === 'object') {
+                // 객체인 경우 값들을 배열로 변환
+                if (Array.isArray(data.data.sites)) {
+                    sitesArray = data.data.sites;
+                } else if (Array.isArray(data.data.list)) {
+                    sitesArray = data.data.list;
+                } else if (Array.isArray(data.data.items)) {
+                    sitesArray = data.data.items;
+                } else {
+                    // 객체의 값들을 배열로 변환
+                    sitesArray = Object.values(data.data);
+                }
+                console.log('🔄 객체를 배열로 변환:', sitesArray);
+            } else {
                 console.warn('⚠️ data.data가 배열이 아닙니다:', typeof data.data, data.data);
                 throw new Error('사이트 데이터가 배열 형식이 아닙니다.');
             }
             
             // 빈 배열인 경우 처리
-            if (data.data.length === 0) {
+            if (sitesArray.length === 0) {
                 console.warn('⚠️ 사이트 목록이 비어있습니다.');
                 this.loadFallbackSites();
                 return;
             }
             
             // 사이트 데이터 변환
-            this.allSites = data.data.reduce((acc, site) => {
+            this.allSites = sitesArray.reduce((acc, site) => {
                 // 각 사이트 객체 검증
                 if (!site || typeof site !== 'object') {
                     console.warn('⚠️ 잘못된 사이트 객체:', site);
@@ -662,27 +679,50 @@ class NotificationApp {
         } catch (error) {
             console.error('❌ 사이트 목록 로드 실패:', error);
             
+            // 에러 메시지에 따라 다른 처리
             if (error.name === 'AbortError') {
                 this.showError('요청 시간이 초과되었습니다. 네트워크 연결을 확인해주세요.');
             } else if (error.message.includes('HTTP 5')) {
                 this.showError('서버에 일시적인 문제가 있습니다. 잠시 후 다시 시도해주세요.');
+            } else if (error.message.includes('배열 형식이 아닙니다')) {
+                this.showError('서버에서 예상과 다른 형식의 데이터를 보냈습니다. 기본 목록을 사용합니다.');
+                console.log('🔄 폴백 사이트 목록으로 전환');
             } else {
                 this.showError('학과 목록을 불러오는데 실패했습니다: ' + error.message);
             }
             
+            // 폴백 사이트 목록 로드
             this.loadFallbackSites();
         }
     }
 
     loadFallbackSites() {
-        // 기본 사이트 목록
+        // 기본 사이트 목록 (더 풍부한 목록)
         this.allSites = {
             'catholic_notice': { id: 'catholic_notice', name: '가톨릭대학교 공지사항', category: 'general' },
             'dept_ai': { id: 'dept_ai', name: 'AI학과', category: 'department' },
-            'dept_computer': { id: 'dept_computer', name: '컴퓨터정보공학부', category: 'department' }
+            'dept_computer': { id: 'dept_computer', name: '컴퓨터정보공학부', category: 'department' },
+            'dept_electrical': { id: 'dept_electrical', name: '전자전기공학부', category: 'department' },
+            'dept_mechanical': { id: 'dept_mechanical', name: '기계공학부', category: 'department' },
+            'dept_civil': { id: 'dept_civil', name: '건축토목공학부', category: 'department' },
+            'dept_business': { id: 'dept_business', name: '경영학부', category: 'department' },
+            'dept_economics': { id: 'dept_economics', name: '경제학부', category: 'department' },
+            'dept_english': { id: 'dept_english', name: '영어영문학과', category: 'department' },
+            'dept_korean': { id: 'dept_korean', name: '국어국문학과', category: 'department' },
+            'dept_psychology': { id: 'dept_psychology', name: '심리학과', category: 'department' },
+            'dept_sociology': { id: 'dept_sociology', name: '사회학과', category: 'department' },
+            'dept_mathematics': { id: 'dept_mathematics', name: '수학과', category: 'department' },
+            'dept_physics': { id: 'dept_physics', name: '물리학과', category: 'department' },
+            'dept_chemistry': { id: 'dept_chemistry', name: '화학과', category: 'department' },
+            'dept_biology': { id: 'dept_biology', name: '생물학과', category: 'department' },
+            'dept_nursing': { id: 'dept_nursing', name: '간호학과', category: 'department' },
+            'dept_medicine': { id: 'dept_medicine', name: '의학과', category: 'department' },
+            'dept_pharmacy': { id: 'dept_pharmacy', name: '약학과', category: 'department' },
+            'dept_law': { id: 'dept_law', name: '법학과', category: 'department' }
         };
         
-        console.log('⚠️ 기본 사이트 목록 사용');
+        console.log('⚠️ 기본 사이트 목록 사용 (총 20개 학과)');
+        this.showWarning('API에서 데이터를 가져올 수 없어 기본 학과 목록을 사용합니다.');
         this.renderSites();
     }
 
