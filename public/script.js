@@ -1033,8 +1033,20 @@ class NotificationApp {
         this.subscriptionCard.classList.remove('hidden');
     }
 
+    showLoading(message = '로딩 중...') {
+        if (this.loadingState) {
+            this.loadingState.classList.remove('hidden');
+            const loadingText = this.loadingState.querySelector('p');
+            if (loadingText) {
+                loadingText.textContent = message;
+            }
+        }
+    }
+
     hideLoading() {
-        this.loadingState.classList.add('hidden');
+        if (this.loadingState) {
+            this.loadingState.classList.add('hidden');
+        }
     }
 
     showMessage(message, type = 'info') {
