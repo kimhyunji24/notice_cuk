@@ -378,6 +378,190 @@ class NotificationApp {
         document.body.appendChild(tokenDialog);
     }
 
+    // 디버그 정보를 표시하는 함수
+    showDebugInfo() {
+        const debugDialog = document.createElement('div');
+        debugDialog.className = 'token-dialog';
+        
+        const dialogContent = document.createElement('div');
+        dialogContent.className = 'token-dialog-content';
+        
+        const dialogHeader = document.createElement('div');
+        dialogHeader.className = 'token-dialog-header';
+        dialogHeader.innerHTML = `
+            <h3>🔧 디버그 정보</h3>
+            <button class="token-dialog-close">×</button>
+        `;
+        
+        // 현재 상태 정보 수집
+        const notificationPermission = Notification.permission;
+        const hasFirebaseV9 = !!window.firebaseV9;
+        const hasEnvironmentConfig = !!window.EnvironmentConfig;
+        const hasMessaging = !!messaging;
+        const hasFCMToken = !!this.fcmToken;
+        const userAgent = navigator.userAgent;
+        const isServiceWorkerSupported = 'serviceWorker' in navigator;
+        
+        let serviceWorkerStatus = 'Not supported';
+        if (isServiceWorkerSupported) {
+            serviceWorkerStatus = navigator.serviceWorker.controller ? 'Active' : 'Registered but not active';
+        }
+
+        const debugDisplay = document.createElement('div');
+        debugDisplay.className = 'token-display';
+        debugDisplay.innerHTML = `
+            <div class="debug-section">
+                <h4>📱 브라우저 정보</h4>
+                <p><strong>User Agent:</strong> ${userAgent.substring(0, 100)}...</p>
+                <p><strong>알림 권한:</strong> <span class="status-${notificationPermission}">${notificationPermission}</span></p>
+                <p><strong>Service Worker:</strong> <span class="status-${isServiceWorkerSupported ? 'granted' : 'denied'}">${serviceWorkerStatus}</span></p>
+            </div>
+            
+            <div class="debug-section">
+                <h4>🔥 Firebase 상태</h4>
+                <p><strong>Firebase V9 SDK:</strong> <span class="status-${hasFirebaseV9 ? 'granted' : 'denied'}">${hasFirebaseV9 ? '로드됨' : '로드 안됨'}</span></p>
+                <p><strong>Environment Config:</strong> <span class="status-${hasEnvironmentConfig ? 'granted' : 'denied'}">${hasEnvironmentConfig ? '로드됨' : '로드 안됨'}</span></p>
+                <p><strong>Messaging Instance:</strong> <span class="status-${hasMessaging ? 'granted' : 'denied'}">${hasMessaging ? '초기화됨' : '초기화 안됨'}</span></p>
+                <p><strong>FCM 토큰:</strong> <span class="status-${hasFCMToken ? 'granted' : 'denied'}">${hasFCMToken ? '있음' : '없음'}</span></p>
+            </div>
+
+            <div class="debug-section">
+                <h4>💾 로컬 스토리지</h4>
+                <p><strong>LocalStorage 지원:</strong> <span class="status-${typeof Storage !== 'undefined' ? 'granted' : 'denied'}">${typeof Storage !== 'undefined' ? '지원됨' : '지원 안됨'}</span></p>
+            </div>
+        `;
+        
+        const debugActions = document.createElement('div');
+        debugActions.className = 'token-actions';
+        
+        const resetButton = document.createElement('button');
+        resetButton.className = 'btn btn-secondary';
+        resetButton.textContent = '🔄 웹사이트 초기화';
+        resetButton.onclick = () => {
+            if (confirm('모든 설정과 데이터를 초기화하시겠습니까? (알림 권한, 로컬 데이터 등)')) {
+                this.resetWebsite();
+                debugDialog.remove();
+            }
+        };
+        
+        const refreshTokenButton = document.createElement('button');
+        refreshTokenButton.className = 'btn btn-primary';
+        refreshTokenButton.textContent = '🔑 토큰 새로고침';
+        refreshTokenButton.onclick = async () => {
+            try {
+                await this.refreshFCMToken();
+                this.showSuccess('토큰이 새로고침되었습니다.');
+                debugDialog.remove();
+            } catch (error) {
+                this.showError('토큰 새로고침 실패: ' + error.message);
+            }
+        };
+        
+        const reloadButton = document.createElement('button');
+        reloadButton.className = 'btn btn-secondary';
+        reloadButton.textContent = '🔄 페이지 새로고침';
+        reloadButton.onclick = () => {
+            location.reload();
+        };
+        
+        debugActions.appendChild(refreshTokenButton);
+        debugActions.appendChild(resetButton);
+        debugActions.appendChild(reloadButton);
+        
+        dialogContent.appendChild(dialogHeader);
+        dialogContent.appendChild(debugDisplay);
+        dialogContent.appendChild(debugActions);
+        debugDialog.appendChild(dialogContent);
+        
+        // 닫기 버튼 이벤트
+        const closeButton = dialogContent.querySelector('.token-dialog-close');
+        closeButton.onclick = () => debugDialog.remove();
+        
+        // 배경 클릭 시 닫기
+        debugDialog.onclick = (e) => {
+            if (e.target === debugDialog) {
+                debugDialog.remove();
+            }
+        };
+        
+        document.body.appendChild(debugDialog);
+    }
+
+    // FCM 토큰을 새로고침하는 함수
+    async refreshFCMToken() {
+        try {
+            console.log('🔄 FCM 토큰 새로고침 시도...');
+            
+            // 알림 권한 다시 확인
+            if (Notification.permission !== 'granted') {
+                const permission = await Notification.requestPermission();
+                if (permission !== 'granted') {
+                    throw new Error('알림 권한이 거부되었습니다.');
+                }
+            }
+            
+            // Firebase가 초기화되어 있는지 확인
+            if (!messaging) {
+                await this.initializeFirebase();
+                await this.checkMessagingSupport();
+            }
+            
+            // 새 토큰 요청
+            await this.getFirebaseToken();
+            
+            console.log('✅ FCM 토큰 새로고침 완료');
+        } catch (error) {
+            console.error('❌ FCM 토큰 새로고침 실패:', error);
+            throw error;
+        }
+    }
+
+    // 웹사이트를 완전히 초기화하는 함수
+    resetWebsite() {
+        try {
+            console.log('🔄 웹사이트 초기화 시작...');
+            
+            // 로컬 스토리지 클리어
+            if (typeof Storage !== 'undefined') {
+                localStorage.clear();
+                sessionStorage.clear();
+                console.log('✅ 로컬 스토리지 클리어 완료');
+            }
+            
+            // Service Worker 등록 해제
+            if ('serviceWorker' in navigator) {
+                navigator.serviceWorker.getRegistrations().then(registrations => {
+                    registrations.forEach(registration => {
+                        registration.unregister();
+                        console.log('✅ Service Worker 등록 해제:', registration.scope);
+                    });
+                });
+            }
+            
+            // 캐시 클리어 (가능한 경우)
+            if ('caches' in window) {
+                caches.keys().then(cacheNames => {
+                    cacheNames.forEach(cacheName => {
+                        caches.delete(cacheName);
+                        console.log('✅ 캐시 삭제:', cacheName);
+                    });
+                });
+            }
+            
+            // 알림 권한 재설정 안내
+            this.showSuccess('웹사이트가 초기화되었습니다. 브라우저 설정에서 알림 권한을 재설정해주세요.');
+            
+            // 3초 후 페이지 새로고침
+            setTimeout(() => {
+                location.reload();
+            }, 3000);
+            
+        } catch (error) {
+            console.error('❌ 웹사이트 초기화 실패:', error);
+            this.showError('초기화 중 오류가 발생했습니다: ' + error.message);
+        }
+    }
+
     async loadSites() {
         try {
             const apiConfig = window.EnvironmentConfig.getApiConfig();
@@ -1064,6 +1248,16 @@ class MobileNavigation {
                 e.preventDefault();
                 this.setActiveNav('token');
                 this.app.showDeviceToken();
+            });
+        }
+        
+        // 디버그 버튼 이벤트 리스너 추가
+        const navDebug = document.getElementById('nav-debug');
+        if (navDebug) {
+            navDebug.addEventListener('click', (e) => {
+                e.preventDefault();
+                this.setActiveNav('debug');
+                this.app.showDebugInfo();
             });
         }
         

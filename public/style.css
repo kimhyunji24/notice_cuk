@@ -936,6 +936,48 @@ body {
     flex: 1;
 }
 
+/* 디버그 정보 스타일 */
+.debug-section {
+    margin-bottom: 1.5rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.debug-section:last-child {
+    border-bottom: none;
+    margin-bottom: 0;
+}
+
+.debug-section h4 {
+    margin: 0 0 0.75rem 0;
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.debug-section p {
+    margin: 0.5rem 0;
+    font-size: 0.875rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.status-granted {
+    color: var(--success-color);
+    font-weight: 600;
+}
+
+.status-denied {
+    color: var(--error-color);
+    font-weight: 600;
+}
+
+.status-default {
+    color: var(--warning-color);
+    font-weight: 600;
+}
+
 /* 유틸리티 클래스 */
 .hidden {
     display: none !important;
