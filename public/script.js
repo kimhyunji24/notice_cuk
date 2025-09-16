@@ -106,6 +106,20 @@ class NotificationApp {
         if (!window.firebaseV9) {
             throw new Error('Firebase v9+ SDK 로드 실패');
         }
+
+        // EnvironmentConfig 로드 대기
+        let configRetries = 0;
+        const maxConfigRetries = 20;
+        
+        while (!window.EnvironmentConfig && configRetries < maxConfigRetries) {
+            console.log(`⏳ EnvironmentConfig 로드 대기... (${configRetries + 1}/${maxConfigRetries})`);
+            await new Promise(resolve => setTimeout(resolve, 100));
+            configRetries++;
+        }
+        
+        if (!window.EnvironmentConfig) {
+            throw new Error('EnvironmentConfig 로드 실패');
+        }
         
         // Firebase 앱 초기화
         const firebaseConfig = window.EnvironmentConfig.getFirebaseConfig();
