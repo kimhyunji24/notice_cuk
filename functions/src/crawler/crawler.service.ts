@@ -172,8 +172,8 @@ class CrawlerService {
       return { siteId, success: true, newPostsCount: 0 };
     }
 
-    // 새 게시물 식별
-    const newPosts = currentPosts.filter(post => !processedNos.includes(post.no));
+    // 새 게시물 식별 - 개선된 로직
+    const newPosts = this.identifyNewPosts(currentPosts, processedNos, siteId);
 
     if (newPosts.length > 0) {
       console.log(`🎉 [${siteId}] 새 글 ${newPosts.length}개 발견`);
@@ -205,13 +205,8 @@ class CrawlerService {
       console.log(`📭 [${siteId}] 새 글 없음`);
     }
 
-    // 크롤링 상태 업데이트  
-    await crawledPostService.updateCrawledPost(siteId, {
-      processedNos: currentPosts.map(p => p.no),
-      lastTitle: currentPosts[0]?.title || null,
-      lastPostNo: currentPosts[0]?.no || null,
-      postCount: currentPosts.length
-    });
+    // 크롤링 상태 업데이트 - 개선된 로직
+    await this.updateCrawledPostData(siteId, currentPosts, newPosts);
 
     console.log(`✅ [${siteId}] 크롤링 완료 - 새 글 ${newPosts.length}개`);
 
@@ -220,6 +215,83 @@ class CrawlerService {
       success: true,
       newPostsCount: newPosts.length
     };
+  }
+
+  /**
+   * 새 게시물 식별 - 개선된 로직
+   */
+  private identifyNewPosts(currentPosts: Post[], processedNos: string[], siteId: string): Post[] {
+    console.log(`[${siteId}] 새 게시물 식별 시작 - 현재: ${currentPosts.length}개, 처리됨: ${processedNos.length}개`);
+    
+    // 1. 숫자 기반 게시물 번호만 필터링 (해시 ID 제외)
+    const numericPosts = currentPosts.filter(post => !post.no.startsWith('hash_'));
+    const hashPosts = currentPosts.filter(post => post.no.startsWith('hash_'));
+    
+    console.log(`[${siteId}] 숫자 기반 게시물: ${numericPosts.length}개, 해시 기반: ${hashPosts.length}개`);
+    
+    // 2. 숫자 기반 게시물에서 새 글 찾기
+    const newNumericPosts = numericPosts.filter(post => !processedNos.includes(post.no));
+    
+    // 3. 해시 기반 게시물은 제목과 내용이 완전히 다른 경우만 새 글로 인식
+    const newHashPosts = hashPosts.filter(post => {
+      // 해시 ID가 이미 처리된 목록에 있는지 확인
+      if (processedNos.includes(post.no)) {
+        return false;
+      }
+      
+      // 제목이 의미있는 내용인지 확인 (너무 짧거나 일반적인 제목 제외)
+      const meaningfulTitles = ['대학/대학원', '주요 사이트', '메뉴', '홈', '공지사항'];
+      if (meaningfulTitles.some(title => post.title.includes(title))) {
+        console.log(`[${siteId}] 의미없는 해시 게시물 제외: ${post.title}`);
+        return false;
+      }
+      
+      return true;
+    });
+    
+    const allNewPosts = [...newNumericPosts, ...newHashPosts];
+    
+    console.log(`[${siteId}] 새 게시물 분석 결과:`);
+    console.log(`  - 숫자 기반 새 글: ${newNumericPosts.length}개`);
+    console.log(`  - 해시 기반 새 글: ${newHashPosts.length}개`);
+    console.log(`  - 총 새 글: ${allNewPosts.length}개`);
+    
+    if (allNewPosts.length > 0) {
+      allNewPosts.forEach((post, index) => {
+        console.log(`  ${index + 1}. ${post.no} | ${post.title} | ${post.isImportant ? '중요' : '일반'}`);
+      });
+    }
+    
+    return allNewPosts;
+  }
+
+  /**
+   * 크롤링 데이터 업데이트 - 개선된 로직
+   */
+  private async updateCrawledPostData(siteId: string, currentPosts: Post[], newPosts: Post[]): Promise<void> {
+    try {
+      // 현재 게시물에서 숫자 기반 게시물만 processedNos에 저장
+      const numericPosts = currentPosts.filter(post => !post.no.startsWith('hash_'));
+      const processedNos = numericPosts.map(p => p.no);
+      
+      console.log(`[${siteId}] processedNos 업데이트: ${processedNos.length}개 (해시 ID 제외)`);
+      
+      await crawledPostService.updateCrawledPost(siteId, {
+        processedNos: processedNos,
+        lastTitle: currentPosts[0]?.title || null,
+        lastPostNo: currentPosts[0]?.no || null,
+        postCount: currentPosts.length,
+        // 새 글 정보 추가
+        lastNewPostCount: newPosts.length,
+        lastNewPostTitles: newPosts.map(p => p.title)
+      });
+      
+      console.log(`[${siteId}] 크롤링 데이터 업데이트 완료`);
+      
+    } catch (error) {
+      console.error(`❌ [${siteId}] 크롤링 데이터 업데이트 실패:`, error);
+      throw error;
+    }
   }
 
   /**
