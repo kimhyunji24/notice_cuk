@@ -401,6 +401,7 @@ class NotificationApp {
         const hasFCMToken = !!this.fcmToken;
         const userAgent = navigator.userAgent;
         const isServiceWorkerSupported = 'serviceWorker' in navigator;
+        const sitesCount = Object.keys(this.allSites || {}).length;
         
         let serviceWorkerStatus = 'Not supported';
         if (isServiceWorkerSupported) {
@@ -428,6 +429,12 @@ class NotificationApp {
             <div class="debug-section">
                 <h4>💾 로컬 스토리지</h4>
                 <p><strong>LocalStorage 지원:</strong> <span class="status-${typeof Storage !== 'undefined' ? 'granted' : 'denied'}">${typeof Storage !== 'undefined' ? '지원됨' : '지원 안됨'}</span></p>
+            </div>
+
+            <div class="debug-section">
+                <h4>📚 사이트 데이터</h4>
+                <p><strong>로드된 사이트 수:</strong> <span class="status-${sitesCount > 0 ? 'granted' : 'denied'}">${sitesCount}개</span></p>
+                <p><strong>API 상태:</strong> <span class="status-${sitesCount > 0 ? 'granted' : 'denied'}">${sitesCount > 0 ? '정상' : '문제 있음'}</span></p>
             </div>
         `;
         
@@ -457,6 +464,19 @@ class NotificationApp {
             }
         };
         
+        const reloadSitesButton = document.createElement('button');
+        reloadSitesButton.className = 'btn btn-secondary';
+        reloadSitesButton.textContent = '📚 사이트 새로고침';
+        reloadSitesButton.onclick = async () => {
+            try {
+                await this.loadSites();
+                this.showSuccess('사이트 목록이 새로고침되었습니다.');
+                debugDialog.remove();
+            } catch (error) {
+                this.showError('사이트 목록 새로고침 실패: ' + error.message);
+            }
+        };
+        
         const reloadButton = document.createElement('button');
         reloadButton.className = 'btn btn-secondary';
         reloadButton.textContent = '🔄 페이지 새로고침';
@@ -465,6 +485,7 @@ class NotificationApp {
         };
         
         debugActions.appendChild(refreshTokenButton);
+        debugActions.appendChild(reloadSitesButton);
         debugActions.appendChild(resetButton);
         debugActions.appendChild(reloadButton);
         
@@ -586,17 +607,57 @@ class NotificationApp {
 
             const data = await response.json();
             
-            if (data.success && data.data) {
-                this.allSites = data.data.reduce((acc, site) => {
-                    acc[site.id] = site;
-                    return acc;
-                }, {});
-                
-                console.log('✅ 사이트 목록 로드 완료:', Object.keys(this.allSites).length, '개');
-                this.renderSites();
-            } else {
-                throw new Error('사이트 데이터 형식이 올바르지 않습니다.');
+            console.log('📊 API 응답 데이터:', data);
+            
+            // 데이터 구조 검증
+            if (!data) {
+                throw new Error('서버에서 빈 응답을 받았습니다.');
             }
+            
+            if (!data.success) {
+                throw new Error(data.message || 'API 요청이 실패했습니다.');
+            }
+            
+            if (!data.data) {
+                throw new Error('사이트 데이터가 없습니다.');
+            }
+            
+            // data.data가 배열인지 확인
+            if (!Array.isArray(data.data)) {
+                console.warn('⚠️ data.data가 배열이 아닙니다:', typeof data.data, data.data);
+                throw new Error('사이트 데이터가 배열 형식이 아닙니다.');
+            }
+            
+            // 빈 배열인 경우 처리
+            if (data.data.length === 0) {
+                console.warn('⚠️ 사이트 목록이 비어있습니다.');
+                this.loadFallbackSites();
+                return;
+            }
+            
+            // 사이트 데이터 변환
+            this.allSites = data.data.reduce((acc, site) => {
+                // 각 사이트 객체 검증
+                if (!site || typeof site !== 'object') {
+                    console.warn('⚠️ 잘못된 사이트 객체:', site);
+                    return acc;
+                }
+                
+                if (!site.id) {
+                    console.warn('⚠️ ID가 없는 사이트:', site);
+                    return acc;
+                }
+                
+                acc[site.id] = {
+                    id: site.id,
+                    name: site.name || '이름 없음',
+                    category: site.category || 'general'
+                };
+                return acc;
+            }, {});
+            
+            console.log('✅ 사이트 목록 로드 완료:', Object.keys(this.allSites).length, '개');
+            this.renderSites();
             
         } catch (error) {
             console.error('❌ 사이트 목록 로드 실패:', error);
