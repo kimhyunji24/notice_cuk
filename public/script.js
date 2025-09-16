@@ -2,11 +2,6 @@
 // 참고: https://firebase.google.com/docs/cloud-messaging/js/client
 // 성공 사례: https://velog.io/@chy8165/FCM을-이용해-웹-푸시알림-구현-웹-PWA
 
-// 환경 설정
-const envConfig = window.EnvironmentConfig;
-const firebaseConfig = envConfig.getFirebaseConfig();
-const apiConfig = envConfig.getApiConfig();
-
 // Firebase 인스턴스
 let firebaseApp = null;
 let messaging = null;
