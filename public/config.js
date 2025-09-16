@@ -138,20 +138,49 @@ class EnvironmentConfig {
     }
 }
 
-// 전역 인스턴스 생성
-const envConfig = new EnvironmentConfig();
+// 안전한 초기화
+try {
+    // 전역 인스턴스 생성
+    const envConfig = new EnvironmentConfig();
 
-// 브라우저 환경에서만 window 객체에 할당
-if (isBrowser) {
-    window.EnvironmentConfig = envConfig;
-    
-    // 개발 환경에서 정보 출력
-    if (envConfig.isDevelopment()) {
-        envConfig.logEnvironmentInfo();
+    // 브라우저 환경에서만 window 객체에 할당
+    if (isBrowser) {
+        window.EnvironmentConfig = envConfig;
+        
+        // 개발 환경에서 정보 출력
+        if (envConfig.isDevelopment()) {
+            envConfig.logEnvironmentInfo();
+        }
+        
+        console.log('✅ EnvironmentConfig 초기화 완료');
     }
-}
 
-// Node.js 환경에서 사용할 수 있도록 export
-if (typeof module !== 'undefined' && module.exports) {
-    module.exports = envConfig;
+    // Node.js 환경에서 사용할 수 있도록 export
+    if (typeof module !== 'undefined' && module.exports) {
+        module.exports = envConfig;
+    }
+} catch (error) {
+    console.error('❌ EnvironmentConfig 초기화 실패:', error);
+    
+    // 최소한의 기본 설정으로 폴백
+    if (isBrowser) {
+        window.EnvironmentConfig = {
+            getFirebaseConfig: () => ({
+                apiKey: "AIzaSyDZvIopijEsI9MrC-WHSqS1G9arX_U5m5Y",
+                authDomain: "cuknotice.firebaseapp.com",
+                projectId: "cuknotice",
+                storageBucket: "cuknotice.firebasestorage.app",
+                messagingSenderId: "218411557852",
+                appId: "1:218411557852:web:896358449c61ee029ce519",
+                vapidKey: "BOkYvfB9VwE9IL66t0GxDEVr2Zob_DBfOi4v_coBWUHW5X8wIXwGpnnyu9Jz4-tshN5sAS1kPH3dO-HQY5gXOtk"
+            }),
+            getApiConfig: () => ({
+                baseUrl: 'https://asia-northeast3-cuknotice.cloudfunctions.net/api',
+                timeout: 15000
+            }),
+            isDevelopment: () => false,
+            isProduction: () => true
+        };
+        console.log('⚠️ EnvironmentConfig 폴백 설정 사용');
+    }
 }

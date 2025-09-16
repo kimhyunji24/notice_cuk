@@ -150,27 +150,46 @@
         </nav>
     </div>
 
-    <!-- Firebase v9+ 모듈러 SDK (공식 문서 권장 방식) -->
-    <script type="module">
-        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.13.2/firebase-app.js';
-        import { getMessaging, getToken, onMessage, isSupported } from 'https://www.gstatic.com/firebasejs/10.13.2/firebase-messaging.js';
-        
-        // 전역으로 노출
-        window.firebaseV9 = {
-            initializeApp,
-            getMessaging,
-            getToken,
-            onMessage,
-            isSupported
-        };
-        
-        console.log('🔥 Firebase v9+ 모듈러 SDK 로드 완료');
-    </script>
-    
-    <!-- 환경 설정 -->
+    <!-- 환경 설정 (가장 먼저 로드) -->
     <script src="config.js"></script>
     
-    <!-- 메인 스크립트 (config.js 로드 후 실행) -->
+    <!-- Firebase v9+ 모듈러 SDK (공식 문서 권장 방식) -->
+    <script type="module">
+        try {
+            const { initializeApp } = await import('https://www.gstatic.com/firebasejs/10.13.2/firebase-app.js');
+            const { getMessaging, getToken, onMessage, isSupported } = await import('https://www.gstatic.com/firebasejs/10.13.2/firebase-messaging.js');
+            
+            // 전역으로 노출
+            window.firebaseV9 = {
+                initializeApp,
+                getMessaging,
+                getToken,
+                onMessage,
+                isSupported
+            };
+            
+            console.log('🔥 Firebase v9+ 모듈러 SDK 로드 완료');
+            
+            // Firebase가 로드된 후 메인 스크립트 실행
+            if (typeof window.initializeMainApp === 'function') {
+                window.initializeMainApp();
+            }
+        } catch (error) {
+            console.error('❌ Firebase SDK 로드 실패:', error);
+            // 기본 에러 메시지 표시
+            document.body.innerHTML += `
+                <div style="position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); 
+                           background: #fee; padding: 20px; border-radius: 8px; border: 1px solid #fcc; 
+                           font-family: Arial, sans-serif; text-align: center; z-index: 9999;">
+                    <h3 style="color: #c33; margin: 0 0 10px 0;">Firebase 로드 실패</h3>
+                    <p style="margin: 0 0 10px 0;">${error.message}</p>
+                    <button onclick="location.reload()" style="padding: 8px 16px; background: #c33; color: white; border: none; border-radius: 4px; cursor: pointer;">새로고침</button>
+                </div>
+            `;
+        }
+    </script>
+    
+    <!-- 메인 스크립트 -->
     <script src="script.js"></script>
 </body>
 </html>

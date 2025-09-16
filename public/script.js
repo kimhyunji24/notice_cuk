@@ -1049,9 +1049,25 @@ NotificationApp.prototype.showSubscriptionForm = function() {
     document.querySelector('.subscription-edit-actions').classList.add('hidden');
 };
 
-// 앱 초기화
-document.addEventListener('DOMContentLoaded', async () => {
+// 안전한 초기화 함수
+async function initializeMainApp() {
     try {
+        console.log('🚀 메인 앱 초기화 시작...');
+        
+        // 브라우저 환경 확인
+        if (typeof window === 'undefined') {
+            throw new Error('브라우저 환경이 아닙니다');
+        }
+        
+        // 필수 의존성 확인
+        if (!window.EnvironmentConfig) {
+            throw new Error('EnvironmentConfig가 로드되지 않았습니다');
+        }
+        
+        if (!window.firebaseV9) {
+            throw new Error('Firebase SDK가 로드되지 않았습니다');
+        }
+        
         // Service Worker 등록
         await registerServiceWorker();
         
@@ -1065,17 +1081,57 @@ document.addEventListener('DOMContentLoaded', async () => {
         window.notificationApp = app;
         window.mobileNav = mobileNav;
         
+        console.log('✅ 메인 앱 초기화 완료');
+        
     } catch (error) {
         console.error('❌ 앱 시작 실패:', error);
         
         // 기본 에러 메시지 표시
         const errorDiv = document.createElement('div');
-        errorDiv.className = 'error-message';
+        errorDiv.style.cssText = `
+            position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            background: #fee; padding: 20px; border-radius: 8px; border: 1px solid #fcc;
+            font-family: Arial, sans-serif; text-align: center; z-index: 9999;
+            max-width: 90%; box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        `;
         errorDiv.innerHTML = `
-            <h3>앱 시작 실패</h3>
-            <p>${error.message}</p>
-            <button onclick="location.reload()">새로고침</button>
+            <h3 style="color: #c33; margin: 0 0 10px 0;">앱 시작 실패</h3>
+            <p style="margin: 0 0 10px 0; color: #666;">${error.message}</p>
+            <button onclick="location.reload()" style="padding: 8px 16px; background: #c33; color: white; border: none; border-radius: 4px; cursor: pointer;">새로고침</button>
         `;
         document.body.appendChild(errorDiv);
+    }
+}
+
+// 전역에서 접근 가능하도록 설정
+window.initializeMainApp = initializeMainApp;
+
+// DOM이 로드되면 초기화 시도 (Firebase가 아직 로드되지 않았을 경우를 대비)
+document.addEventListener('DOMContentLoaded', () => {
+    console.log('📄 DOM 로드 완료');
+    
+    // Firebase가 이미 로드되어 있으면 바로 초기화
+    if (window.firebaseV9) {
+        initializeMainApp();
+    } else {
+        console.log('⏳ Firebase SDK 로드 대기 중...');
+        // Firebase가 로드될 때까지 최대 10초 대기
+        let attempts = 0;
+        const maxAttempts = 100; // 10초 (100ms * 100)
+        
+        const checkFirebase = () => {
+            attempts++;
+            if (window.firebaseV9) {
+                console.log('✅ Firebase SDK 로드 확인됨');
+                initializeMainApp();
+            } else if (attempts < maxAttempts) {
+                setTimeout(checkFirebase, 100);
+            } else {
+                console.error('❌ Firebase SDK 로드 시간 초과');
+                initializeMainApp(); // 에러 처리를 위해 시도
+            }
+        };
+        
+        setTimeout(checkFirebase, 100);
     }
 });
