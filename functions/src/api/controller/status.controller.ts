@@ -563,6 +563,65 @@ export class StatusController {
     const latestTimestamp = Math.max(...timestamps);
     return new Date(latestTimestamp).toISOString();
   }
+
+  /**
+   * 테스트 알림을 전송합니다
+   */
+  async sendTestNotification(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const { fcmService } = await import('../../services/fcm.service');
+      
+      console.log('🧪 테스트 알림 전송 요청');
+      
+      // 테스트 알림 데이터
+      const testNotification = {
+        title: '알리알리 테스트 알림',
+        body: '테스트 알림이 성공적으로 전송되었습니다!',
+        icon: '/icon-192.png',
+        badge: '/badge-72.png',
+        data: {
+          url: '/',
+          siteId: 'test',
+          postNo: 'test',
+          isImportant: false
+        }
+      };
+
+      // 모든 구독자에게 테스트 알림 전송
+      const { subscriptionService } = await import('../../services/subscription.service');
+      const allSubscribers = await subscriptionService.getAllSubscribers();
+      
+      if (allSubscribers.length === 0) {
+        res.status(400).json({
+          success: false,
+          error: '구독자가 없습니다. 먼저 구독을 등록해주세요.',
+          timestamp: new Date().toISOString()
+        });
+        return;
+      }
+
+      console.log(`📤 테스트 알림 전송 시작: ${allSubscribers.length}명의 구독자에게`);
+      
+      const result = await fcmService.sendToMultiple(allSubscribers, testNotification);
+      
+      const response: ApiResponse<any> = {
+        success: true,
+        data: {
+          message: '테스트 알림이 전송되었습니다',
+          sentTo: result.successCount,
+          failed: result.failureCount,
+          invalidTokens: result.invalidTokens.length,
+          timestamp: new Date().toISOString()
+        }
+      };
+
+      res.json(response);
+
+    } catch (error: any) {
+      console.error('테스트 알림 전송 오류:', error);
+      next(error);
+    }
+  }
 }
 
 export const statusController = new StatusController();

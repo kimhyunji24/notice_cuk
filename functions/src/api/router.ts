@@ -42,6 +42,7 @@ app.get('/health', statusController.getHealthCheck);
 app.get('/test/crawl/:siteId', statusController.testCrawling);
 app.post('/test/simulate-new-post/:siteId', statusController.simulateNewPost);
 app.post('/test/run-crawler', statusController.runCrawler);
+app.post('/test-notification', statusController.sendTestNotification);
 
 // 데이터베이스 직접 조작 API
 app.get('/db/site/:siteId', statusController.getSiteData);

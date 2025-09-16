@@ -162,6 +162,32 @@ class SubscriptionService {
       return 0;
     }
   }
+
+  /**
+   * 모든 구독자의 FCM 토큰을 가져옵니다 (테스트 알림용)
+   */
+  async getAllSubscribers(): Promise<string[]> {
+    try {
+      const snapshot = await this.db.collection('subscriptions')
+        .where('isActive', '==', true)
+        .get();
+
+      const tokens: string[] = [];
+      snapshot.docs.forEach(doc => {
+        const data = doc.data();
+        if (data.fcmToken) {
+          tokens.push(data.fcmToken);
+        }
+      });
+
+      console.log(`📋 전체 구독자 토큰 조회: ${tokens.length}개`);
+      return tokens;
+
+    } catch (error) {
+      console.error('전체 구독자 조회 실패:', error);
+      return [];
+    }
+  }
 }
 
 export const subscriptionService = new SubscriptionService();
