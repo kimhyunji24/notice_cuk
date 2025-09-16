@@ -144,8 +144,7 @@ export const validateEnvironment = (): void => {
   
   const requiredFields = [
     'firebase.projectId',
-    'firebase.region',
-    'fcm.vapidKey'
+    'firebase.region'
   ];
   
   const missingFields: string[] = [];
@@ -159,6 +158,13 @@ export const validateEnvironment = (): void => {
   
   if (missingFields.length > 0) {
     throw new Error(`필수 환경 설정이 누락되었습니다: ${missingFields.join(', ')}`);
+  }
+  
+  // VAPID 키 별도 확인
+  if (!config.fcm.vapidKey || config.fcm.vapidKey.trim() === '') {
+    console.warn('⚠️ FCM VAPID 키가 설정되지 않았습니다. 웹 푸시 알림이 작동하지 않을 수 있습니다.');
+  } else {
+    console.log('✅ FCM VAPID 키 확인 완료');
   }
   
   console.log('✅ 환경 설정 검증 완료');

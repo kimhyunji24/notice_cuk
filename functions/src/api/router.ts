@@ -41,6 +41,16 @@ app.get('/health', statusController.getHealthCheck);
 // 디버깅 엔드포인트 (개발/테스트용)
 app.get('/test/crawl/:siteId', statusController.testCrawling);
 app.post('/test/simulate-new-post/:siteId', statusController.simulateNewPost);
+app.post('/test/run-crawler', statusController.runCrawler);
+
+// 데이터베이스 직접 조작 API
+app.get('/db/site/:siteId', statusController.getSiteData);
+app.put('/db/site/:siteId/processed-nos', statusController.updateProcessedNos);
+
+// 사용자 구독 관리 API
+app.get('/user/subscription/:token', statusController.getUserSubscription);
+app.put('/user/subscription/:token', statusController.updateUserSubscription);
+app.delete('/user/subscription/:token', statusController.deleteUserSubscription);
 
 // 간단한 ping 엔드포인트
 app.get('/ping', (req, res) => {

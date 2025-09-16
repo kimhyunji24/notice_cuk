@@ -40,6 +40,9 @@
             <div id="subscription-card" class="card">
                 <div class="card-header">
                     <h2>📚 구독할 학과 선택</h2>
+                    <button id="manage-subscriptions" class="btn-secondary" style="margin-top: 10px;">
+                        📋 내 구독 관리
+                    </button>
                 </div>
                 <div class="card-content">
                     <div id="loading-state" class="loading">
@@ -78,7 +81,25 @@
                                     <div class="spinner-small"></div>
                                 </div>
                             </button>
+                            <button id="test-notification" class="btn btn-secondary">
+                                테스트 알림
+                            </button>
                         </div>
+                    </div>
+
+                    <!-- 구독 관리 영역 -->
+                    <div id="subscription-list" class="hidden">
+                        <!-- 동적으로 생성됨 -->
+                    </div>
+
+                    <!-- 구독 수정 버튼들 -->
+                    <div class="subscription-edit-actions hidden">
+                        <button id="save-subscriptions" class="btn btn-primary" style="display: none;">
+                            구독 저장
+                        </button>
+                        <button id="cancel-edit" class="btn btn-secondary" style="display: none;">
+                            취소
+                        </button>
                     </div>
                 </div>
             </div>

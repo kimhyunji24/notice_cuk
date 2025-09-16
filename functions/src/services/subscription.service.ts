@@ -60,6 +60,47 @@ class SubscriptionService {
   }
 
   /**
+   * 특정 토큰의 구독 정보를 조회합니다
+   */
+  async getSubscriptionByToken(token: string): Promise<StoredSubscription | null> {
+    try {
+      const doc = await this.db.collection(this.COLLECTION_NAME).doc(token).get();
+      
+      if (!doc.exists) {
+        return null;
+      }
+
+      return doc.data() as StoredSubscription;
+
+    } catch (error) {
+      console.error(`❌ 구독 정보 조회 실패:`, error);
+      return null;
+    }
+  }
+
+  /**
+   * 구독을 삭제합니다
+   */
+  async deleteSubscription(token: string): Promise<boolean> {
+    try {
+      const docRef = this.db.collection(this.COLLECTION_NAME).doc(token);
+      const doc = await docRef.get();
+      
+      if (!doc.exists) {
+        return false;
+      }
+
+      await docRef.delete();
+      console.log(`🗑️ 구독 삭제 완료: ${token.substring(0, 20)}...`);
+      return true;
+
+    } catch (error) {
+      console.error(`❌ 구독 삭제 실패:`, error);
+      return false;
+    }
+  }
+
+  /**
    * 구독자 수 통계를 가져옵니다
    */
   async getSubscriptionStats(): Promise<{

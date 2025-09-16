@@ -17,6 +17,8 @@ class NotificationApp {
         this.selectedSites = new Set();
         this.allSites = {};
         this.currentCategory = 'all';
+        this.userSubscriptions = [];
+        this.isEditingMode = false;
         
         this.initializeElements();
         this.attachEventListeners();
@@ -39,6 +41,11 @@ class NotificationApp {
         this.selectAllBtn = document.getElementById('select-all');
         this.clearAllBtn = document.getElementById('clear-all');
         this.testNotificationBtn = document.getElementById('test-notification');
+        this.manageSubscriptionsBtn = document.getElementById('manage-subscriptions');
+        this.subscriptionList = document.getElementById('subscription-list');
+        this.editSubscriptionsBtn = document.getElementById('edit-subscriptions');
+        this.saveSubscriptionsBtn = document.getElementById('save-subscriptions');
+        this.cancelEditBtn = document.getElementById('cancel-edit');
         
         this.filterTabs = document.querySelectorAll('.filter-tab');
     }
@@ -50,6 +57,10 @@ class NotificationApp {
         this.selectAllBtn.addEventListener('click', () => this.selectAllSites());
         this.clearAllBtn.addEventListener('click', () => this.clearAllSites());
         this.testNotificationBtn.addEventListener('click', () => this.sendTestNotification());
+        this.manageSubscriptionsBtn.addEventListener('click', () => this.showSubscriptionManagement());
+        this.editSubscriptionsBtn.addEventListener('click', () => this.startEditMode());
+        this.saveSubscriptionsBtn.addEventListener('click', () => this.saveSubscriptionChanges());
+        this.cancelEditBtn.addEventListener('click', () => this.cancelEditMode());
         
         this.filterTabs.forEach(tab => {
             tab.addEventListener('click', (e) => this.filterByCategory(e.target.dataset.category));
@@ -534,6 +545,230 @@ class NotificationApp {
     showWarning(message) {
         this.showMessage(message, 'warning');
         console.warn('⚠️ 경고:', message);
+    }
+
+    // 구독 관리 기능들
+    async showSubscriptionManagement() {
+        if (!this.fcmToken) {
+            this.showError('FCM 토큰이 없습니다. 알림 권한을 먼저 허용해주세요.');
+            return;
+        }
+
+        try {
+            this.showLoading('구독 정보를 불러오는 중...');
+            
+            const response = await fetch(`${apiConfig.baseUrl}/user/subscription/${this.fcmToken}`, {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            const result = await response.json();
+
+            if (response.ok && result.success) {
+                this.userSubscriptions = result.data.sites;
+                this.renderSubscriptionList(result.data);
+                this.showSubscriptionCard();
+            } else {
+                throw new Error(result.error || '구독 정보를 불러오는데 실패했습니다.');
+            }
+
+        } catch (error) {
+            console.error('❌ 구독 정보 조회 실패:', error);
+            this.showError('구독 정보를 불러오는데 실패했습니다: ' + error.message);
+        } finally {
+            this.hideLoading();
+        }
+    }
+
+    renderSubscriptionList(subscriptionData) {
+        if (!this.subscriptionList) return;
+
+        const { sites, siteDetails, totalSites, subscribedAt, lastUpdated } = subscriptionData;
+        
+        this.subscriptionList.innerHTML = `
+            <div class="subscription-header">
+                <h3>📋 내 구독 목록</h3>
+                <div class="subscription-stats">
+                    <span class="stat-item">총 ${totalSites}개 학과</span>
+                    <span class="stat-item">구독일: ${new Date(subscribedAt).toLocaleDateString()}</span>
+                </div>
+            </div>
+            
+            <div class="subscription-list">
+                ${siteDetails.map(site => `
+                    <div class="subscription-item" data-site-id="${site.siteId}">
+                        <div class="site-info">
+                            <h4>${this.getSiteName(site.siteId)}</h4>
+                            <p class="site-details">
+                                최신글: ${site.lastTitle || '정보 없음'}<br>
+                                게시물 수: ${site.postCount}개
+                            </p>
+                        </div>
+                        <div class="site-actions">
+                            <button class="btn-remove" onclick="notificationApp.removeSubscription('${site.siteId}')">
+                                구독 해제
+                            </button>
+                        </div>
+                    </div>
+                `).join('')}
+            </div>
+            
+            <div class="subscription-actions">
+                <button id="edit-subscriptions" class="btn-primary">구독 수정</button>
+                <button id="delete-all-subscriptions" class="btn-danger" onclick="notificationApp.deleteAllSubscriptions()">
+                    전체 구독 해제
+                </button>
+            </div>
+        `;
+
+        // 이벤트 리스너 재등록
+        this.editSubscriptionsBtn = document.getElementById('edit-subscriptions');
+        if (this.editSubscriptionsBtn) {
+            this.editSubscriptionsBtn.addEventListener('click', () => this.startEditMode());
+        }
+    }
+
+    getSiteName(siteId) {
+        const site = this.allSites[siteId];
+        return site ? site.name : siteId;
+    }
+
+    startEditMode() {
+        this.isEditingMode = true;
+        this.showSubscriptionCard();
+        this.selectedSites = new Set(this.userSubscriptions);
+        this.renderSites();
+        this.updateSelectedCount();
+        
+        // UI 변경
+        if (this.editSubscriptionsBtn) this.editSubscriptionsBtn.style.display = 'none';
+        if (this.saveSubscriptionsBtn) this.saveSubscriptionsBtn.style.display = 'inline-block';
+        if (this.cancelEditBtn) this.cancelEditBtn.style.display = 'inline-block';
+    }
+
+    cancelEditMode() {
+        this.isEditingMode = false;
+        this.selectedSites.clear();
+        this.showSubscriptionManagement();
+        
+        // UI 변경
+        if (this.editSubscriptionsBtn) this.editSubscriptionsBtn.style.display = 'inline-block';
+        if (this.saveSubscriptionsBtn) this.saveSubscriptionsBtn.style.display = 'none';
+        if (this.cancelEditBtn) this.cancelEditBtn.style.display = 'none';
+    }
+
+    async saveSubscriptionChanges() {
+        if (!this.fcmToken) {
+            this.showError('FCM 토큰이 없습니다.');
+            return;
+        }
+
+        try {
+            this.saveSubscriptionsBtn.disabled = true;
+            this.saveSubscriptionsBtn.textContent = '저장 중...';
+
+            const response = await fetch(`${apiConfig.baseUrl}/user/subscription/${this.fcmToken}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    siteIds: Array.from(this.selectedSites)
+                })
+            });
+
+            const result = await response.json();
+
+            if (response.ok && result.success) {
+                this.showSuccess('구독이 성공적으로 업데이트되었습니다!');
+                this.userSubscriptions = result.data.sites;
+                this.cancelEditMode();
+            } else {
+                throw new Error(result.error || '구독 업데이트에 실패했습니다.');
+            }
+
+        } catch (error) {
+            console.error('❌ 구독 업데이트 실패:', error);
+            this.showError('구독 업데이트에 실패했습니다: ' + error.message);
+        } finally {
+            this.saveSubscriptionsBtn.disabled = false;
+            this.saveSubscriptionsBtn.textContent = '구독 저장';
+        }
+    }
+
+    async removeSubscription(siteId) {
+        if (!this.fcmToken) {
+            this.showError('FCM 토큰이 없습니다.');
+            return;
+        }
+
+        if (!confirm(`${this.getSiteName(siteId)} 구독을 해제하시겠습니까?`)) {
+            return;
+        }
+
+        try {
+            const updatedSites = this.userSubscriptions.filter(id => id !== siteId);
+            
+            const response = await fetch(`${apiConfig.baseUrl}/user/subscription/${this.fcmToken}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    siteIds: updatedSites
+                })
+            });
+
+            const result = await response.json();
+
+            if (response.ok && result.success) {
+                this.showSuccess(`${this.getSiteName(siteId)} 구독이 해제되었습니다.`);
+                this.userSubscriptions = updatedSites;
+                this.showSubscriptionManagement(); // 목록 새로고침
+            } else {
+                throw new Error(result.error || '구독 해제에 실패했습니다.');
+            }
+
+        } catch (error) {
+            console.error('❌ 구독 해제 실패:', error);
+            this.showError('구독 해제에 실패했습니다: ' + error.message);
+        }
+    }
+
+    async deleteAllSubscriptions() {
+        if (!this.fcmToken) {
+            this.showError('FCM 토큰이 없습니다.');
+            return;
+        }
+
+        if (!confirm('모든 구독을 해제하시겠습니까?')) {
+            return;
+        }
+
+        try {
+            const response = await fetch(`${apiConfig.baseUrl}/user/subscription/${this.fcmToken}`, {
+                method: 'DELETE',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            const result = await response.json();
+
+            if (response.ok && result.success) {
+                this.showSuccess('모든 구독이 해제되었습니다.');
+                this.userSubscriptions = [];
+                this.showPermissionCard(); // 권한 요청 화면으로 돌아가기
+            } else {
+                throw new Error(result.error || '구독 삭제에 실패했습니다.');
+            }
+
+        } catch (error) {
+            console.error('❌ 구독 삭제 실패:', error);
+            this.showError('구독 삭제에 실패했습니다: ' + error.message);
+        }
     }
 }
 
