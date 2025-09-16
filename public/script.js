@@ -108,6 +108,7 @@ class NotificationApp {
         }
         
         // Firebase 앱 초기화
+        const firebaseConfig = window.EnvironmentConfig.getFirebaseConfig();
         firebaseApp = window.firebaseV9.initializeApp(firebaseConfig);
         console.log('✅ Firebase 앱 초기화 완료:', firebaseConfig.projectId);
         
@@ -226,6 +227,7 @@ class NotificationApp {
             console.log('🎫 FCM 토큰 요청 중...');
             
             // 공식 문서 권장 방식: getToken with vapidKey
+            const firebaseConfig = window.EnvironmentConfig.getFirebaseConfig();
             this.fcmToken = await window.firebaseV9.getToken(messaging, {
                 vapidKey: firebaseConfig.vapidKey
             });
@@ -254,6 +256,7 @@ class NotificationApp {
 
     async loadSites() {
         try {
+            const apiConfig = window.EnvironmentConfig.getApiConfig();
             console.log('📚 사이트 목록 로드 시도:', apiConfig.baseUrl);
             
             const controller = new AbortController();
@@ -437,6 +440,7 @@ class NotificationApp {
                 platform: subscriptionData.platform
             });
 
+            const apiConfig = window.EnvironmentConfig.getApiConfig();
             const response = await fetch(`${apiConfig.baseUrl}/subscription`, {
                 method: 'POST',
                 headers: {
@@ -473,6 +477,7 @@ class NotificationApp {
             this.testNotificationBtn.disabled = true;
             this.testNotificationBtn.textContent = '전송 중...';
 
+            const apiConfig = window.EnvironmentConfig.getApiConfig();
             const response = await fetch(`${apiConfig.baseUrl}/test-notification`, {
                 method: 'POST',
                 headers: {
@@ -557,6 +562,7 @@ class NotificationApp {
         try {
             this.showLoading('구독 정보를 불러오는 중...');
             
+            const apiConfig = window.EnvironmentConfig.getApiConfig();
             const response = await fetch(`${apiConfig.baseUrl}/user/subscription/${this.fcmToken}`, {
                 method: 'GET',
                 headers: {
@@ -669,6 +675,7 @@ class NotificationApp {
             this.saveSubscriptionsBtn.disabled = true;
             this.saveSubscriptionsBtn.textContent = '저장 중...';
 
+            const apiConfig = window.EnvironmentConfig.getApiConfig();
             const response = await fetch(`${apiConfig.baseUrl}/user/subscription/${this.fcmToken}`, {
                 method: 'PUT',
                 headers: {
@@ -711,6 +718,7 @@ class NotificationApp {
         try {
             const updatedSites = this.userSubscriptions.filter(id => id !== siteId);
             
+            const apiConfig = window.EnvironmentConfig.getApiConfig();
             const response = await fetch(`${apiConfig.baseUrl}/user/subscription/${this.fcmToken}`, {
                 method: 'PUT',
                 headers: {
@@ -748,6 +756,7 @@ class NotificationApp {
         }
 
         try {
+            const apiConfig = window.EnvironmentConfig.getApiConfig();
             const response = await fetch(`${apiConfig.baseUrl}/user/subscription/${this.fcmToken}`, {
                 method: 'DELETE',
                 headers: {
