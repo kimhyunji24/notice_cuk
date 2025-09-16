@@ -141,6 +141,67 @@ export class StatusController {
   }
 
   /**
+   * 테스트용: 특정 사이트의 마지막 게시물을 processedNos에서 제거
+   */
+  async simulateNewPost(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const { siteId } = req.params;
+      
+      if (!siteId) {
+        res.status(400).json({
+          success: false,
+          error: 'siteId 파라미터가 필요합니다.',
+          timestamp: new Date().toISOString()
+        });
+        return;
+      }
+
+      console.log(`🧪 새 글 시뮬레이션 요청: ${siteId}`);
+      
+      // 현재 processedNos 가져오기
+      const crawledPost = await crawledPostService.getCrawledPost(siteId);
+      if (!crawledPost || !crawledPost.processedNos || crawledPost.processedNos.length === 0) {
+        res.status(404).json({
+          success: false,
+          error: '해당 사이트의 크롤링 데이터가 없습니다.',
+          timestamp: new Date().toISOString()
+        });
+        return;
+      }
+
+      // 마지막 게시물 번호 제거
+      const originalProcessedNos = [...crawledPost.processedNos];
+      const removedPostNo = originalProcessedNos.pop(); // 마지막 게시물 제거
+      
+      // DB 업데이트
+      await crawledPostService.updateCrawledPost(siteId, {
+        processedNos: originalProcessedNos,
+        lastTitle: crawledPost.lastTitle,
+        lastPostNo: crawledPost.lastPostNo,
+        postCount: crawledPost.postCount
+      });
+
+      console.log(`🧪 [${siteId}] 게시물 번호 ${removedPostNo} 제거완료. 다음 크롤링에서 새 글로 인식됩니다.`);
+
+      const response: ApiResponse<any> = {
+        success: true,
+        data: {
+          siteId,
+          removedPostNo,
+          message: '다음 크롤링(최대 10분 후)에서 해당 게시물이 새 글로 인식되어 알림이 발송됩니다.',
+          timestamp: new Date().toISOString()
+        }
+      };
+
+      res.json(response);
+
+    } catch (error: any) {
+      console.error('새 글 시뮬레이션 오류:', error);
+      next(error);
+    }
+  }
+
+  /**
    * 최근 업데이트 시간을 구합니다.
    */
   private getLastUpdateTime(crawlerStatus: Record<string, any>): string | null {

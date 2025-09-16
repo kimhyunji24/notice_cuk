@@ -1,14 +1,15 @@
-// 환경 설정에서 Firebase 설정 가져오기
+// Firebase v9+ 공식 문서 기반 FCM 구현
+// 참고: https://firebase.google.com/docs/cloud-messaging/js/client
+// 성공 사례: https://velog.io/@chy8165/FCM을-이용해-웹-푸시알림-구현-웹-PWA
+
+// 환경 설정
 const envConfig = window.EnvironmentConfig;
 const firebaseConfig = envConfig.getFirebaseConfig();
 const apiConfig = envConfig.getApiConfig();
 
-// Firebase 초기화
-firebase.initializeApp(firebaseConfig);
-const messaging = firebase.messaging();
-
-// VAPID 키 설정
-messaging.usePublicVapidKey(firebaseConfig.vapidKey);
+// Firebase 인스턴스
+let firebaseApp = null;
+let messaging = null;
 
 class NotificationApp {
     constructor() {
@@ -57,57 +58,186 @@ class NotificationApp {
 
     async initialize() {
         try {
+            console.log('🚀 앱 초기화 시작...');
+            
+            // Firebase 초기화 대기
+            await this.initializeFirebase();
+            
+            // 알림 지원 여부 확인
+            await this.checkMessagingSupport();
+            
+            // 권한 상태 확인
             await this.checkNotificationPermission();
+            
+            // 사이트 목록 로드
             await this.loadSites();
+            
             this.hideLoading();
+            console.log('✅ 앱 초기화 완료');
+            
         } catch (error) {
-            console.error('초기화 실패:', error);
-            this.showError('앱 초기화에 실패했습니다. 페이지를 새로고침해주세요.');
+            console.error('❌ 앱 초기화 실패:', error);
+            this.showError('앱 초기화에 실패했습니다: ' + error.message);
+        }
+    }
+
+    async initializeFirebase() {
+        // Firebase v9+ 로드 대기
+        let retries = 0;
+        const maxRetries = 20;
+        
+        while (!window.firebaseV9 && retries < maxRetries) {
+            console.log(`⏳ Firebase v9+ 로드 대기... (${retries + 1}/${maxRetries})`);
+            await new Promise(resolve => setTimeout(resolve, 100));
+            retries++;
+        }
+        
+        if (!window.firebaseV9) {
+            throw new Error('Firebase v9+ SDK 로드 실패');
+        }
+        
+        // Firebase 앱 초기화
+        firebaseApp = window.firebaseV9.initializeApp(firebaseConfig);
+        console.log('✅ Firebase 앱 초기화 완료:', firebaseConfig.projectId);
+        
+        return firebaseApp;
+    }
+
+    async checkMessagingSupport() {
+        try {
+            // 메시징 지원 여부 확인 (공식 문서 권장)
+            const isMessagingSupported = await window.firebaseV9.isSupported();
+            
+            if (!isMessagingSupported) {
+                throw new Error('이 브라우저는 FCM을 지원하지 않습니다.');
+            }
+            
+            // 메시징 인스턴스 초기화
+            messaging = window.firebaseV9.getMessaging(firebaseApp);
+            console.log('✅ Firebase Messaging 초기화 완료');
+            
+            // 포그라운드 메시지 리스너 설정
+            this.setupForegroundMessaging();
+            
+        } catch (error) {
+            console.error('❌ 메시징 지원 확인 실패:', error);
+            throw error;
+        }
+    }
+
+    setupForegroundMessaging() {
+        if (!messaging) return;
+        
+        // 공식 문서 권장 방식: onMessage 사용
+        window.firebaseV9.onMessage(messaging, (payload) => {
+            console.log('🔔 포그라운드 메시지 수신:', payload);
+            
+            const { title, body, icon } = payload.notification || {};
+            const { url, siteId } = payload.data || {};
+            
+            // 브라우저 알림 표시
+            if (title && body) {
+                this.showBrowserNotification(title, body, icon, url);
+            }
+            
+            // UI 업데이트
+            this.showSuccess(`새 공지: ${title}`);
+        });
+        
+        console.log('✅ 포그라운드 메시지 리스너 설정 완료');
+    }
+
+    showBrowserNotification(title, body, icon, url) {
+        if (Notification.permission === 'granted') {
+            const notification = new Notification(title, {
+                body,
+                icon: icon || '/icon-192.png',
+                badge: '/badge-72.png',
+                tag: 'cuk-notice',
+                requireInteraction: true,
+                actions: url ? [
+                    { action: 'open', title: '공지 보기' }
+                ] : []
+            });
+
+            notification.onclick = () => {
+                if (url) {
+                    window.open(url, '_blank');
+                }
+                notification.close();
+            };
         }
     }
 
     async checkNotificationPermission() {
         const permission = Notification.permission;
+        console.log('🔔 현재 알림 권한:', permission);
         
         if (permission === 'granted') {
-            this.permissionCard.classList.add('hidden');
             await this.getFirebaseToken();
+            this.showSubscriptionCard();
         } else if (permission === 'denied') {
             this.showPermissionCard();
-            this.showWarning('알림이 차단되어 있습니다. 브라우저 설정에서 알림을 허용해주세요.');
+            this.showError('알림이 차단되어 있습니다. 브라우저 설정에서 알림을 허용해주세요.');
         } else {
             this.showPermissionCard();
         }
     }
 
-    showPermissionCard() {
-        this.permissionCard.classList.remove('hidden');
-    }
-
     async requestNotificationPermission() {
         try {
+            console.log('🔔 알림 권한 요청...');
+            
+            // 공식 문서 권장: Notification.requestPermission() 사용
             const permission = await Notification.requestPermission();
+            console.log('🔔 알림 권한 응답:', permission);
             
             if (permission === 'granted') {
-                this.permissionCard.classList.add('hidden');
-                await this.getFirebaseToken();
                 this.showSuccess('알림 권한이 허용되었습니다!');
+                await this.getFirebaseToken();
+                this.showSubscriptionCard();
             } else {
-                this.showError('알림 권한이 거부되었습니다. 브라우저 설정에서 수동으로 허용해주세요.');
+                this.showError('알림 권한이 거부되었습니다.');
             }
+            
         } catch (error) {
-            console.error('알림 권한 요청 실패:', error);
-            this.showError('알림 권한 요청 중 오류가 발생했습니다.');
+            console.error('❌ 알림 권한 요청 실패:', error);
+            this.showError('알림 권한 요청 중 오류가 발생했습니다: ' + error.message);
         }
     }
 
     async getFirebaseToken() {
         try {
-            this.fcmToken = await messaging.getToken();
-            console.log('FCM 토큰 획득 성공');
+            if (!messaging) {
+                throw new Error('Firebase Messaging이 초기화되지 않았습니다.');
+            }
+            
+            console.log('🎫 FCM 토큰 요청 중...');
+            
+            // 공식 문서 권장 방식: getToken with vapidKey
+            this.fcmToken = await window.firebaseV9.getToken(messaging, {
+                vapidKey: firebaseConfig.vapidKey
+            });
+            
+            if (!this.fcmToken) {
+                throw new Error('FCM 토큰을 받지 못했습니다.');
+            }
+            
+            console.log('✅ FCM 토큰 획득 성공');
+            console.log('토큰 길이:', this.fcmToken.length);
+            
         } catch (error) {
-            console.error('FCM 토큰 획득 실패:', error);
-            this.showError('푸시 알림 토큰을 가져오는데 실패했습니다.');
+            console.error('❌ FCM 토큰 획득 실패:', error);
+            
+            if (error.code === 'messaging/unsupported-browser') {
+                this.showError('이 브라우저는 푸시 알림을 지원하지 않습니다.');
+            } else if (error.code === 'messaging/permission-blocked') {
+                this.showError('알림 권한이 차단되어 있습니다. 브라우저 설정을 확인해주세요.');
+            } else {
+                this.showError('푸시 알림 토큰을 가져오는데 실패했습니다: ' + error.message);
+            }
+            
+            throw error;
         }
     }
 
@@ -134,125 +264,100 @@ class NotificationApp {
 
             const data = await response.json();
             
-            if (data.success) {
-                // API 응답을 기존 형식으로 변환
-                this.allSites = {};
-                data.data.sites.forEach(site => {
-                    this.allSites[site.id] = {
-                        name: site.name,
-                        category: site.category
-                    };
-                });
+            if (data.success && data.data) {
+                this.allSites = data.data.reduce((acc, site) => {
+                    acc[site.id] = site;
+                    return acc;
+                }, {});
                 
-                console.log(`📚 ${data.data.totalCount}개 학과 목록 로드 완료`);
+                console.log('✅ 사이트 목록 로드 완료:', Object.keys(this.allSites).length, '개');
                 this.renderSites();
             } else {
-                throw new Error(data.error || '사이트 목록 로드 실패');
+                throw new Error('사이트 데이터 형식이 올바르지 않습니다.');
             }
             
         } catch (error) {
-            console.error('사이트 목록 로드 실패:', error);
+            console.error('❌ 사이트 목록 로드 실패:', error);
             
             if (error.name === 'AbortError') {
                 this.showError('요청 시간이 초과되었습니다. 네트워크 연결을 확인해주세요.');
             } else if (error.message.includes('HTTP 5')) {
                 this.showError('서버에 일시적인 문제가 있습니다. 잠시 후 다시 시도해주세요.');
             } else {
-                this.showError('학과 목록을 불러오는데 실패했습니다. 네트워크 연결을 확인해주세요.');
+                this.showError('학과 목록을 불러오는데 실패했습니다: ' + error.message);
             }
             
-            // 실패 시 기본 목록 표시
             this.loadFallbackSites();
         }
     }
 
-    /**
-     * API 실패 시 사용할 기본 사이트 목록
-     */
     loadFallbackSites() {
+        // 기본 사이트 목록
         this.allSites = {
-            'dept_computer_info': { name: '컴퓨터정보공학부', category: '공학계열' },
-            'dept_ai': { name: '인공지능학과', category: '공학계열' },
-            'dept_data_science': { name: '데이터사이언스학과', category: '공학계열' },
-            'dept_korean_language': { name: '국어국문학과', category: '인문계열' },
-            'dept_english': { name: '영어영문학과', category: '인문계열' },
-            'dept_business': { name: '경영학부', category: '경영계열' },
-            'dept_accounting': { name: '회계학과', category: '경영계열' },
-            'dept_mathematics': { name: '수학과', category: '자연계열' },
-            'dept_chemistry': { name: '화학과', category: '자연계열' },
-            'dept_psychology': { name: '심리학과', category: '사회계열' },
-            'dept_sociology': { name: '사회학과', category: '사회계열' },
-            'catholic_notice': { name: '가톨릭대학교 공지사항', category: '대학공지' }
+            'catholic_notice': { id: 'catholic_notice', name: '가톨릭대학교 공지사항', category: 'general' },
+            'dept_ai': { id: 'dept_ai', name: 'AI학과', category: 'department' },
+            'dept_computer': { id: 'dept_computer', name: '컴퓨터정보공학부', category: 'department' }
         };
         
+        console.log('⚠️ 기본 사이트 목록 사용');
         this.renderSites();
-        console.warn('⚠️ 기본 사이트 목록을 사용합니다.');
     }
 
     renderSites() {
-        const filteredSites = this.getFilteredSites();
-        this.sitesContainer.innerHTML = '';
-
-        Object.entries(filteredSites).forEach(([siteId, site]) => {
-            const siteElement = this.createSiteElement(siteId, site);
-            this.sitesContainer.appendChild(siteElement);
-        });
-
-        if (Object.keys(filteredSites).length === 0) {
-            this.sitesContainer.innerHTML = '<div class="no-results">검색 결과가 없습니다.</div>';
-        }
-    }
-
-    createSiteElement(siteId, site) {
-        const div = document.createElement('div');
-        div.className = 'site-item';
+        const sites = this.getFilteredSites();
         
-        const isSelected = this.selectedSites.has(siteId);
-        if (isSelected) {
-            div.classList.add('selected');
-        }
-
-        div.innerHTML = `
-            <div class="site-checkbox">
-                <input type="checkbox" id="site-${siteId}" ${isSelected ? 'checked' : ''}>
-                <label for="site-${siteId}">
+        this.sitesContainer.innerHTML = sites.map(site => `
+            <div class="site-item" data-site-id="${site.id}">
+                <label class="site-label">
+                    <input type="checkbox" class="site-checkbox" value="${site.id}">
                     <span class="site-name">${site.name}</span>
-                    <span class="site-category">${site.category}</span>
+                    <span class="site-category">${this.getCategoryName(site.category)}</span>
                 </label>
             </div>
-        `;
+        `).join('');
 
-        const checkbox = div.querySelector('input[type="checkbox"]');
-        checkbox.addEventListener('change', () => this.toggleSite(siteId, checkbox.checked));
+        // 체크박스 이벤트 리스너 추가
+        this.sitesContainer.querySelectorAll('.site-checkbox').forEach(checkbox => {
+            checkbox.addEventListener('change', (e) => {
+                const siteId = e.target.value;
+                if (e.target.checked) {
+                    this.selectedSites.add(siteId);
+                } else {
+                    this.selectedSites.delete(siteId);
+                }
+                this.updateSelectedCount();
+            });
+        });
 
-        return div;
-    }
-
-    toggleSite(siteId, isSelected) {
-        if (isSelected) {
-            this.selectedSites.add(siteId);
-        } else {
-            this.selectedSites.delete(siteId);
-        }
-        
         this.updateSelectedCount();
-        this.updateSaveButtonState();
     }
 
     getFilteredSites() {
-        const searchTerm = this.searchInput.value.toLowerCase();
-        const filtered = {};
+        let sites = Object.values(this.allSites);
+        
+        // 카테고리 필터
+        if (this.currentCategory !== 'all') {
+            sites = sites.filter(site => site.category === this.currentCategory);
+        }
+        
+        // 검색 필터
+        const searchTerm = this.searchInput.value.toLowerCase().trim();
+        if (searchTerm) {
+            sites = sites.filter(site => 
+                site.name.toLowerCase().includes(searchTerm)
+            );
+        }
+        
+        return sites.sort((a, b) => a.name.localeCompare(b.name, 'ko'));
+    }
 
-        Object.entries(this.allSites).forEach(([siteId, site]) => {
-            const matchesSearch = site.name.toLowerCase().includes(searchTerm);
-            const matchesCategory = this.currentCategory === 'all' || site.category === this.currentCategory;
-            
-            if (matchesSearch && matchesCategory) {
-                filtered[siteId] = site;
-            }
-        });
-
-        return filtered;
+    getCategoryName(category) {
+        const categoryNames = {
+            'general': '일반',
+            'department': '학과',
+            'graduate': '대학원'
+        };
+        return categoryNames[category] || category;
     }
 
     filterSites(searchTerm) {
@@ -262,7 +367,7 @@ class NotificationApp {
     filterByCategory(category) {
         this.currentCategory = category;
         
-        // 탭 활성 상태 업데이트
+        // 탭 활성화 상태 업데이트
         this.filterTabs.forEach(tab => {
             tab.classList.toggle('active', tab.dataset.category === category);
         });
@@ -271,36 +376,31 @@ class NotificationApp {
     }
 
     selectAllSites() {
-        const filteredSites = this.getFilteredSites();
-        Object.keys(filteredSites).forEach(siteId => {
-            this.selectedSites.add(siteId);
+        const visibleCheckboxes = this.sitesContainer.querySelectorAll('.site-checkbox');
+        visibleCheckboxes.forEach(checkbox => {
+            checkbox.checked = true;
+            this.selectedSites.add(checkbox.value);
         });
-        this.renderSites();
         this.updateSelectedCount();
-        this.updateSaveButtonState();
     }
 
     clearAllSites() {
-        this.selectedSites.clear();
-        this.renderSites();
+        const visibleCheckboxes = this.sitesContainer.querySelectorAll('.site-checkbox');
+        visibleCheckboxes.forEach(checkbox => {
+            checkbox.checked = false;
+            this.selectedSites.delete(checkbox.value);
+        });
         this.updateSelectedCount();
-        this.updateSaveButtonState();
     }
 
     updateSelectedCount() {
-        this.selectedCountSpan.textContent = `선택됨: ${this.selectedSites.size}개`;
-    }
-
-    updateSaveButtonState() {
-        const hasSelections = this.selectedSites.size > 0;
-        const hasToken = !!this.fcmToken;
-        
-        this.saveBtn.disabled = !hasSelections || !hasToken;
+        this.selectedCountSpan.textContent = this.selectedSites.size;
+        this.saveBtn.disabled = this.selectedSites.size === 0;
     }
 
     async saveSubscription() {
         if (!this.fcmToken) {
-            this.showError('FCM 토큰이 없습니다. 페이지를 새로고침 후 다시 시도해주세요.');
+            this.showError('FCM 토큰이 없습니다. 알림 권한을 다시 확인해주세요.');
             return;
         }
 
@@ -310,147 +410,172 @@ class NotificationApp {
         }
 
         try {
-            this.setSaveButtonLoading(true);
+            this.saveBtn.disabled = true;
+            this.saveBtn.textContent = '저장 중...';
 
-            const response = await fetch(`${apiConfig.baseUrl}/subscribe`, {
+            const subscriptionData = {
+                token: this.fcmToken,
+                siteIds: Array.from(this.selectedSites),
+                platform: navigator.platform || 'unknown',
+                userAgent: navigator.userAgent.substring(0, 100)
+            };
+
+            console.log('💾 구독 정보 저장 요청:', {
+                token: this.fcmToken.substring(0, 20) + '...',
+                siteIds: subscriptionData.siteIds,
+                platform: subscriptionData.platform
+            });
+
+            const response = await fetch(`${apiConfig.baseUrl}/subscription`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(subscriptionData)
+            });
+
+            const result = await response.json();
+
+            if (response.ok && result.success) {
+                this.showSuccess(`구독이 완료되었습니다! (${this.selectedSites.size}개 학과)`);
+                console.log('✅ 구독 저장 성공');
+            } else {
+                throw new Error(result.message || '구독 저장에 실패했습니다.');
+            }
+
+        } catch (error) {
+            console.error('❌ 구독 저장 실패:', error);
+            this.showError('구독 저장에 실패했습니다: ' + error.message);
+        } finally {
+            this.saveBtn.disabled = false;
+            this.saveBtn.textContent = '구독 저장';
+        }
+    }
+
+    async sendTestNotification() {
+        if (!this.fcmToken) {
+            this.showError('FCM 토큰이 없습니다.');
+            return;
+        }
+
+        try {
+            this.testNotificationBtn.disabled = true;
+            this.testNotificationBtn.textContent = '전송 중...';
+
+            const response = await fetch(`${apiConfig.baseUrl}/test-notification`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
                 },
                 body: JSON.stringify({
                     token: this.fcmToken,
-                    sites: Array.from(this.selectedSites)
-                }),
-                timeout: apiConfig.timeout
+                    title: '테스트 알림',
+                    body: 'CUK 공지사항 알리미 테스트입니다.',
+                    url: window.location.href
+                })
             });
 
-            const data = await response.json();
+            const result = await response.json();
 
-            if (data.success) {
-                this.showSuccess(`구독 설정이 완료되었습니다! (${this.selectedSites.size}개 학과)`);
+            if (response.ok && result.success) {
+                this.showSuccess('테스트 알림이 전송되었습니다!');
             } else {
-                this.showError(data.error || '구독 설정에 실패했습니다.');
+                throw new Error(result.message || '테스트 알림 전송에 실패했습니다.');
             }
 
         } catch (error) {
-            console.error('구독 저장 실패:', error);
-            this.showError('네트워크 오류가 발생했습니다. 다시 시도해주세요.');
+            console.error('❌ 테스트 알림 전송 실패:', error);
+            this.showError('테스트 알림 전송에 실패했습니다: ' + error.message);
         } finally {
-            this.setSaveButtonLoading(false);
+            this.testNotificationBtn.disabled = false;
+            this.testNotificationBtn.textContent = '테스트 알림';
         }
     }
 
-    setSaveButtonLoading(isLoading) {
-        const btnText = this.saveBtn.querySelector('.btn-text');
-        const btnLoading = this.saveBtn.querySelector('.btn-loading');
-        
-        if (isLoading) {
-            btnText.classList.add('hidden');
-            btnLoading.classList.remove('hidden');
-            this.saveBtn.disabled = true;
-        } else {
-            btnText.classList.remove('hidden');
-            btnLoading.classList.add('hidden');
-            this.updateSaveButtonState();
-        }
+    showPermissionCard() {
+        this.permissionCard.classList.remove('hidden');
+        this.subscriptionCard.classList.add('hidden');
     }
 
-    async sendTestNotification() {
-        if (!this.fcmToken) {
-            this.showError('알림 권한을 먼저 허용해주세요.');
-            return;
-        }
-
-        // 1. 서비스 워커를 지원하는지 확인
-        if (!('serviceWorker' in navigator)) {
-            this.showError('이 브라우저는 알림 기능을 지원하지 않습니다.');
-            return;
-        }
-        
-        try {
-            // 2. 현재 등록된 서비스 워커 가져오기
-            const registration = await navigator.serviceWorker.getRegistration();
-            if (!registration) {
-                this.showError('서비스 워커가 활성화되지 않았습니다. 페이지를 새로고침 해주세요.');
-                return;
-            }
-
-            // 3. 서비스 워커를 통해 알림 표시 요청
-            await registration.showNotification('테스트 알림', {
-                body: 'CUK 공지사항 알리미가 정상적으로 작동하고 있습니다!',
-                icon: '/icon-192.png',
-                badge: '/badge-72.png'
-            });
-
-            this.showSuccess('테스트 알림이 발송되었습니다!');
-
-        } catch (error) {
-            console.error('테스트 알림 실패:', error);
-            this.showError('테스트 알림 발송에 실패했습니다. 알림 권한을 다시 확인해주세요.');
-        }
+    showSubscriptionCard() {
+        this.permissionCard.classList.add('hidden');
+        this.subscriptionCard.classList.remove('hidden');
     }
 
     hideLoading() {
         this.loadingState.classList.add('hidden');
-        this.subscriptionForm.classList.remove('hidden');
     }
 
-    showMessage(message, type) {
-        this.messageArea.className = `message-area ${type}`;
-        this.messageArea.innerHTML = `
-            <div class="message ${type}">
-                ${message}
-                <button class="message-close" onclick="this.parentElement.parentElement.classList.add('hidden')">&times;</button>
-            </div>
-        `;
-        this.messageArea.classList.remove('hidden');
-
-        // 3초 후 자동 숨김
+    showMessage(message, type = 'info') {
+        const messageDiv = document.createElement('div');
+        messageDiv.className = `message ${type}`;
+        messageDiv.textContent = message;
+        
+        this.messageArea.appendChild(messageDiv);
+        
+        // 3초 후 메시지 제거
         setTimeout(() => {
-            this.messageArea.classList.add('hidden');
+            if (messageDiv.parentNode) {
+                messageDiv.parentNode.removeChild(messageDiv);
+            }
         }, 3000);
-    }
-
-    showSuccess(message) {
-        this.showMessage(message, 'success');
     }
 
     showError(message) {
         this.showMessage(message, 'error');
+        console.error('🚨 에러:', message);
+    }
+
+    showSuccess(message) {
+        this.showMessage(message, 'success');
+        console.log('✅ 성공:', message);
     }
 
     showWarning(message) {
         this.showMessage(message, 'warning');
+        console.warn('⚠️ 경고:', message);
+    }
+}
+
+// Service Worker 등록 (공식 문서 권장 방식)
+async function registerServiceWorker() {
+    if ('serviceWorker' in navigator) {
+        try {
+            const registration = await navigator.serviceWorker.register('/firebase-messaging-sw.js');
+            console.log('✅ Service Worker 등록 성공:', registration.scope);
+            return registration;
+        } catch (error) {
+            console.error('❌ Service Worker 등록 실패:', error);
+            throw error;
+        }
+    } else {
+        throw new Error('Service Worker를 지원하지 않는 브라우저입니다.');
     }
 }
 
 // 앱 초기화
-document.addEventListener('DOMContentLoaded', () => {
-    new NotificationApp();
-});
-
-// Service Worker 등록
-if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('/firebase-messaging-sw.js')
-        .then(registration => {
-            console.log('Service Worker 등록 성공:', registration);
-            messaging.useServiceWorker(registration);
-        })
-        .catch(error => {
-            console.error('Service Worker 등록 실패:', error);
-        });
-}
-
-// 포그라운드 메시지 처리
-messaging.onMessage(payload => {
-    console.log('포그라운드 메시지 수신:', payload);
-    
-    const { title, body, icon } = payload.notification;
-    
-    new Notification(title, {
-        body,
-        icon: icon || '/icon-192.png',
-        badge: '/badge-72.png',
-        requireInteraction: true
-    });
+document.addEventListener('DOMContentLoaded', async () => {
+    try {
+        // Service Worker 등록
+        await registerServiceWorker();
+        
+        // 메인 앱 초기화
+        const app = new NotificationApp();
+        
+        // 전역에서 접근 가능하도록 설정 (디버깅용)
+        window.notificationApp = app;
+        
+    } catch (error) {
+        console.error('❌ 앱 시작 실패:', error);
+        
+        // 기본 에러 메시지 표시
+        const errorDiv = document.createElement('div');
+        errorDiv.className = 'error-message';
+        errorDiv.innerHTML = `
+            <h3>앱 시작 실패</h3>
+            <p>${error.message}</p>
+            <button onclick="location.reload()">새로고침</button>
+        `;
+        document.body.appendChild(errorDiv);
+    }
 });

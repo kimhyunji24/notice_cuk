@@ -40,6 +40,7 @@ app.get('/health', statusController.getHealthCheck);
 
 // 디버깅 엔드포인트 (개발/테스트용)
 app.get('/test/crawl/:siteId', statusController.testCrawling);
+app.post('/test/simulate-new-post/:siteId', statusController.simulateNewPost);
 
 // 간단한 ping 엔드포인트
 app.get('/ping', (req, res) => {

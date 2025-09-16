@@ -125,6 +125,25 @@ class CrawledPostService {
   }
 
   /**
+   * 특정 사이트의 크롤링 데이터를 가져옵니다 (전체 데이터)
+   */
+  async getCrawledPost(siteId: string): Promise<StoredCrawledPost | null> {
+    try {
+      const doc = await this.db.collection(this.COLLECTION_NAME).doc(siteId).get();
+      
+      if (!doc.exists) {
+        return null;
+      }
+
+      return doc.data() as StoredCrawledPost;
+
+    } catch (error) {
+      console.error(`❌ [${siteId}] 크롤링 데이터 조회 실패:`, error);
+      return null;
+    }
+  }
+
+  /**
    * 특정 사이트의 상태를 가져옵니다
    */
   async getSiteStatus(siteId: string): Promise<SiteStatus | null> {
