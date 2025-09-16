@@ -1030,24 +1030,24 @@ class NotificationApp {
 
     showSubscriptionCard() {
         this.permissionCard.classList.add('hidden');
-        this.subscriptionCard.classList.remove('hidden');
-    }
+      this.subscriptionCard.classList.remove('hidden');
+  }
 
-    showLoading(message = '로딩 중...') {
-        if (this.loadingState) {
-            this.loadingState.classList.remove('hidden');
-            const loadingText = this.loadingState.querySelector('p');
-            if (loadingText) {
-                loadingText.textContent = message;
-            }
-        }
-    }
+  showLoading(message = '로딩 중...') {
+      if (this.loadingState) {
+          this.loadingState.classList.remove('hidden');
+          const loadingText = this.loadingState.querySelector('p');
+          if (loadingText) {
+              loadingText.textContent = message;
+          }
+      }
+  }
 
-    hideLoading() {
-        if (this.loadingState) {
-            this.loadingState.classList.add('hidden');
-        }
-    }
+  hideLoading() {
+      if (this.loadingState) {
+          this.loadingState.classList.add('hidden');
+      }
+  }
 
     showMessage(message, type = 'info') {
         // 메시지 영역이 숨겨져 있으면 표시
