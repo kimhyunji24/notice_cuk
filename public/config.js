@@ -3,6 +3,9 @@
  * Firebase 설정과 API 엔드포인트를 환경별로 관리합니다.
  */
 
+// 브라우저 환경인지 확인
+const isBrowser = typeof window !== 'undefined';
+
 class EnvironmentConfig {
     constructor() {
         this.environment = this.detectEnvironment();
@@ -13,6 +16,11 @@ class EnvironmentConfig {
      * 현재 환경을 감지합니다.
      */
     detectEnvironment() {
+        // 브라우저 환경이 아닌 경우 기본값으로 'production' 반환
+        if (!isBrowser) {
+            return 'production';
+        }
+        
         const hostname = window.location.hostname;
         
         if (hostname === 'localhost' || hostname === '127.0.0.1') {
@@ -122,7 +130,7 @@ class EnvironmentConfig {
      * 환경 정보를 콘솔에 출력합니다.
      */
     logEnvironmentInfo() {
-        if (this.isDevelopment()) {
+        if (this.isDevelopment() && isBrowser) {
             console.log('🔧 개발 환경에서 실행 중');
             console.log('Firebase Project:', this.config.firebase.projectId);
             console.log('API Base URL:', this.config.api.baseUrl);
@@ -131,9 +139,19 @@ class EnvironmentConfig {
 }
 
 // 전역 인스턴스 생성
-window.EnvironmentConfig = new EnvironmentConfig();
+const envConfig = new EnvironmentConfig();
 
-// 개발 환경에서 정보 출력
-if (window.EnvironmentConfig.isDevelopment()) {
-    window.EnvironmentConfig.logEnvironmentInfo();
+// 브라우저 환경에서만 window 객체에 할당
+if (isBrowser) {
+    window.EnvironmentConfig = envConfig;
+    
+    // 개발 환경에서 정보 출력
+    if (envConfig.isDevelopment()) {
+        envConfig.logEnvironmentInfo();
+    }
+}
+
+// Node.js 환경에서 사용할 수 있도록 export
+if (typeof module !== 'undefined' && module.exports) {
+    module.exports = envConfig;
 }

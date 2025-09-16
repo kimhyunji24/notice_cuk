@@ -88,6 +88,11 @@ class NotificationApp {
     }
 
     async initializeFirebase() {
+        // 브라우저 환경 확인
+        if (typeof window === 'undefined') {
+            throw new Error('브라우저 환경이 아닙니다');
+        }
+        
         // Firebase v9+ 로드 대기
         let retries = 0;
         const maxRetries = 20;
