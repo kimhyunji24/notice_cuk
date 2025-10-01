@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 # 알리알리 - 공지사항 알림 서비스
 
 Vue 3 + Spring Boot로 구현된 실시간 공지사항 알림 서비스입니다.
@@ -181,4 +180,3 @@ cd backend
 - Backend: Spring Boot 3.2, JPA/Hibernate, H2, Firebase Admin SDK
 - Frontend: Vue 3, TypeScript, Pinia, Vite, Firebase SDK
 - PWA: Service Worker, Web App Manifest, FCM
->>>>>>> c6850f047d78232fb1f2bfe0c1885ab9488365fd
