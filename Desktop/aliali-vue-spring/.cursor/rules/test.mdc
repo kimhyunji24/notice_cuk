@@ -1,0 +1,7 @@
+---
+description: "토큰 테스트 시, 항상 지정된 fcmToken과 deviceId를 사용합니다."
+globs: 
+    "fcmToken":         "demnPftkU01IxgvqSPAlZL:APA91bG6YUYRWwztcp0oXkQqW38y7ogndUOH6lAFigRwsBmI-HyWykbIQnOafB2el2OqXXCv8m9r9owsWVnj9z_L5esxxsZk783gXe4Uh1A9HnYIAUcVXIk",
+    "deviceId": "device_o9pm50dcc"
+alwaysApply: true
+---
