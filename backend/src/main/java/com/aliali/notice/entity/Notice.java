@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.time.LocalDateTime;
@@ -12,6 +13,7 @@ import java.time.LocalDateTime;
 @Table(name = "notices")
 @Getter
 @Setter
+@NoArgsConstructor
 public class Notice {
     
     @Id
@@ -61,9 +63,6 @@ public class Notice {
     protected void onUpdate() {
         updatedAt = LocalDateTime.now();
     }
-    
-    // Constructors
-    public Notice() {}
     
     public Notice(String title, String content, String url, String externalId, Site site) {
         this.title = title;

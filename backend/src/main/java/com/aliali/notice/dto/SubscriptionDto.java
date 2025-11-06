@@ -2,12 +2,14 @@ package com.aliali.notice.dto;
 
 import com.aliali.notice.entity.Subscription;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.time.LocalDateTime;
 
 @Getter
 @Setter
+@NoArgsConstructor
 public class SubscriptionDto {
     private Long id;
     private String fcmToken;
@@ -18,9 +20,6 @@ public class SubscriptionDto {
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
     private LocalDateTime lastNotified;
-    
-    // Constructors
-    public SubscriptionDto() {}
     
     public SubscriptionDto(Subscription subscription) {
         this.id = subscription.getId();

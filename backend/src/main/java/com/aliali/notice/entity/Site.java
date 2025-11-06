@@ -3,6 +3,7 @@ package com.aliali.notice.entity;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.time.LocalDateTime;
@@ -12,6 +13,7 @@ import java.util.List;
 @Table(name = "sites")
 @Getter
 @Setter
+@NoArgsConstructor
 public class Site {
     
     @Id
@@ -66,9 +68,6 @@ public class Site {
     protected void onUpdate() {
         updatedAt = LocalDateTime.now();
     }
-    
-    // Constructors
-    public Site() {}
     
     public Site(String id, String name, String url, String selector, String titleSelector, String linkSelector, String category) {
         this.id = id;

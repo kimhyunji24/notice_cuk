@@ -2,12 +2,14 @@ package com.aliali.notice.dto;
 
 import com.aliali.notice.entity.Notice;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.time.LocalDateTime;
 
 @Getter
 @Setter
+@NoArgsConstructor
 public class NoticeDto {
     private Long id;
     private String title;
@@ -20,9 +22,6 @@ public class NoticeDto {
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
     private Boolean isNew;
-    
-    // Constructors
-    public NoticeDto() {}
     
     public NoticeDto(Notice notice) {
         this.id = notice.getId();

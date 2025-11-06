@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.time.LocalDateTime;
@@ -12,6 +13,7 @@ import java.time.LocalDateTime;
 @Table(name = "subscriptions")
 @Getter
 @Setter
+@NoArgsConstructor
 public class Subscription {
     
     @Id
@@ -53,9 +55,6 @@ public class Subscription {
     protected void onUpdate() {
         updatedAt = LocalDateTime.now();
     }
-    
-    // Constructors
-    public Subscription() {}
     
     public Subscription(String fcmToken, String deviceId, Site site) {
         this.fcmToken = fcmToken;
