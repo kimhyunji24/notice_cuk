@@ -1,25 +1,68 @@
-*.json
+# -----------------------------
+# 1. 비밀/보안 파일 (Secrets)
+# -----------------------------
+# (중요) 파이어베이스 서비스 계정 키
+firebase-service-account.json
+
+# (중요) API 키나 DB 접속 정보를 담는 .env 파일들
+*.env*
+!*.env.example
+
+
+# -----------------------------
+# 2. IDE 및 에디터 설정 (IntelliJ, VSCode)
+# -----------------------------
+# (필수 추가) IntelliJ 설정
+.idea/
+*.iml
+
+# VSCode
+.vscode/
+*.code-workspace
+
+# Cursor
 /.cursor/
-backend/target/
-# Logs
+
+
+# -----------------------------
+# 3. 운영체제 (OS) 생성 파일
+# -----------------------------
+# (Mac)
+.DS_Store
+
+# (Windows)
+Thumbs.db
+
+
+# -----------------------------
+# 4. 로그 파일 (Logs)
+# -----------------------------
+*.log
 backend/backend.log
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 
-# Local database files
-backend/data/
 
-# IDE/Editor files
-.vscode/
-*.code-workspace
+# -----------------------------
+# 5. 빌드 결과물 및 의존성
+# -----------------------------
+# (필수 추가) Java/Gradle
+.gradle/
+build/
 
-# Dependency directories
+# Java/Maven (혹은 Gradle 'target' 설정)
+backend/target/
+
+# Node.js
 node_modules/
+
+# Frontend (React, Vue, etc.)
 /frontend/dist
+.next/
+.svelte-kit/
 
-# Build output
-/backend/target/
 
-# OS generated files
-.DS_Store
+# 6. 로컬 데이터 (Local Data)
+# -----------------------------
+backend/data/

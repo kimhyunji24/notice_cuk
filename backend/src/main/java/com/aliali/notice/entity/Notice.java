@@ -3,10 +3,15 @@ package com.aliali.notice.entity;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import lombok.Getter;
+import lombok.Setter;
+
 import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "notices")
+@Getter
+@Setter
 public class Notice {
     
     @Id
@@ -67,85 +72,5 @@ public class Notice {
         this.externalId = externalId;
         this.site = site;
     }
-    
-    // Getters and Setters
-    public Long getId() {
-        return id;
-    }
-    
-    public void setId(Long id) {
-        this.id = id;
-    }
-    
-    public String getTitle() {
-        return title;
-    }
-    
-    public void setTitle(String title) {
-        this.title = title;
-    }
-    
-    public String getContent() {
-        return content;
-    }
-    
-    public void setContent(String content) {
-        this.content = content;
-    }
-    
-    public String getUrl() {
-        return url;
-    }
-    
-    public void setUrl(String url) {
-        this.url = url;
-    }
-    
-    public String getExternalId() {
-        return externalId;
-    }
-    
-    public void setExternalId(String externalId) {
-        this.externalId = externalId;
-    }
-    
-    public Site getSite() {
-        return site;
-    }
-    
-    public void setSite(Site site) {
-        this.site = site;
-    }
-    
-    public LocalDateTime getPublishedAt() {
-        return publishedAt;
-    }
-    
-    public void setPublishedAt(LocalDateTime publishedAt) {
-        this.publishedAt = publishedAt;
-    }
-    
-    public LocalDateTime getCreatedAt() {
-        return createdAt;
-    }
-    
-    public void setCreatedAt(LocalDateTime createdAt) {
-        this.createdAt = createdAt;
-    }
-    
-    public LocalDateTime getUpdatedAt() {
-        return updatedAt;
-    }
-    
-    public void setUpdatedAt(LocalDateTime updatedAt) {
-        this.updatedAt = updatedAt;
-    }
-    
-    public Boolean getIsNew() {
-        return isNew;
-    }
-    
-    public void setIsNew(Boolean isNew) {
-        this.isNew = isNew;
-    }
+
 }

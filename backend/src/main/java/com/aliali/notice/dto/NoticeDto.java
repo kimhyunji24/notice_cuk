@@ -1,8 +1,13 @@
 package com.aliali.notice.dto;
 
 import com.aliali.notice.entity.Notice;
+import lombok.Getter;
+import lombok.Setter;
+
 import java.time.LocalDateTime;
 
+@Getter
+@Setter
 public class NoticeDto {
     private Long id;
     private String title;
@@ -32,93 +37,6 @@ public class NoticeDto {
         this.updatedAt = notice.getUpdatedAt();
         this.isNew = notice.getIsNew();
     }
-    
-    // Getters and Setters
-    public Long getId() {
-        return id;
-    }
-    
-    public void setId(Long id) {
-        this.id = id;
-    }
-    
-    public String getTitle() {
-        return title;
-    }
-    
-    public void setTitle(String title) {
-        this.title = title;
-    }
-    
-    public String getContent() {
-        return content;
-    }
-    
-    public void setContent(String content) {
-        this.content = content;
-    }
-    
-    public String getUrl() {
-        return url;
-    }
-    
-    public void setUrl(String url) {
-        this.url = url;
-    }
-    
-    public String getExternalId() {
-        return externalId;
-    }
-    
-    public void setExternalId(String externalId) {
-        this.externalId = externalId;
-    }
-    
-    public String getSiteId() {
-        return siteId;
-    }
-    
-    public void setSiteId(String siteId) {
-        this.siteId = siteId;
-    }
-    
-    public String getSiteName() {
-        return siteName;
-    }
-    
-    public void setSiteName(String siteName) {
-        this.siteName = siteName;
-    }
-    
-    public LocalDateTime getPublishedAt() {
-        return publishedAt;
-    }
-    
-    public void setPublishedAt(LocalDateTime publishedAt) {
-        this.publishedAt = publishedAt;
-    }
-    
-    public LocalDateTime getCreatedAt() {
-        return createdAt;
-    }
-    
-    public void setCreatedAt(LocalDateTime createdAt) {
-        this.createdAt = createdAt;
-    }
-    
-    public LocalDateTime getUpdatedAt() {
-        return updatedAt;
-    }
-    
-    public void setUpdatedAt(LocalDateTime updatedAt) {
-        this.updatedAt = updatedAt;
-    }
-    
-    public Boolean getIsNew() {
-        return isNew;
-    }
-    
-    public void setIsNew(Boolean isNew) {
-        this.isNew = isNew;
-    }
+
+
 }
