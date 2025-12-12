@@ -39,7 +39,7 @@ const notificationResult = ref('')
 const testPing = async () => {
   loading.value = true
   try {
-    const response = await fetch('http://localhost:8080/api/ping')
+    const response = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080/api'}/ping`)
     const data = await response.text()
     pingResult.value = `✅ 백엔드 연결 성공: ${data}`
   } catch (error) {
@@ -52,7 +52,7 @@ const testPing = async () => {
 const testCrawl = async () => {
   loading.value = true
   try {
-    const response = await fetch('http://localhost:8080/api/test-crawl')
+    const response = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080/api'}/test-crawl`)
     const data = await response.text()
     crawlResult.value = `✅ 크롤링 테스트 성공: ${data}`
   } catch (error) {
@@ -65,7 +65,7 @@ const testCrawl = async () => {
 const testNotification = async () => {
   loading.value = true
   try {
-    const response = await fetch('http://localhost:8080/api/test-notification', {
+    const response = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080/api'}/test-notification`, {
       method: 'POST'
     })
     const data = await response.text()

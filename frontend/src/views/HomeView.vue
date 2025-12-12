@@ -115,12 +115,15 @@ const sendTestNotification = async () => {
     }
 
     // 백엔드로 테스트 알림 전송
-    const response = await fetch('http://localhost:8080/api/test-notification', {
+    const response = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080/api'}/test-notification`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/x-www-form-urlencoded',
       },
-      body: `fcmToken=${encodeURIComponent(fcmToken)}&deviceId=${encodeURIComponent(deviceId)}`
+      body: new URLSearchParams({
+        fcmToken: fcmToken,
+        deviceId: deviceId
+      })
     })
     
     if (response.ok) {
@@ -150,7 +153,7 @@ const sendTestNotification = async () => {
 
 const createTestNotice = async () => {
   try {
-    const testTitle = '🚨 테스트 공지사항 - 알림 기능 테스트 🚨'
+    const testTitle = 'RealFCMTest: 🚨 테스트 공지사항 - 알림 기능 테스트 🚨'
     const testUrl = 'https://test.example.com'
     const siteId = 'dept_computer_info' // 컴퓨터정보공학부
     
@@ -163,7 +166,7 @@ const createTestNotice = async () => {
       console.log('🔄 중복 테스트 공지사항 발견:', existingNotice)
       
       // 기존 공지사항을 isNew=true로 변경하고 목록 새로고침
-      const response = await fetch(`http://localhost:8080/api/notices/${existingNotice.id}/mark-new`, {
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080/api'}/notices/${existingNotice.id}/mark-new`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -181,7 +184,7 @@ const createTestNotice = async () => {
     }
     
     // 백엔드로 테스트 공지사항 생성 요청
-    const response = await fetch('http://localhost:8080/api/test-notice', {
+    const response = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080/api'}/test-notice`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/x-www-form-urlencoded',
@@ -251,7 +254,7 @@ const manualCrawlAllSites = async () => {
   try {
     console.log('🔧 전체 사이트 수동 크롤링 시작...')
     
-    const response = await fetch('http://localhost:8080/api/crawl/all', {
+    const response = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080/api'}/crawl/all`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -277,131 +280,98 @@ const manualCrawlAllSites = async () => {
   }
 }
 
-const getCrawlingStatus = async () => {
-  try {
-    console.log('📊 크롤링 상태 확인...')
-    
-    const response = await fetch('http://localhost:8080/api/crawl/status', {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-      }
-    })
-    
-    if (response.ok) {
-      const status = await response.json()
-      console.log('📊 크롤링 상태:', status)
-      
-      const statusText = `
-📊 크롤링 상태 정보:
-
-🔧 크롤러 설정:
-- 활성화: ${status.crawlerEnabled ? '✅' : '❌'}
-- 간격: ${status.crawlerInterval / 1000}초
-- 동시 처리: ${status.concurrentLimit}개
-- 타임아웃: ${status.requestTimeout / 1000}초
-
-📈 사이트 현황:
-- 전체 사이트: ${status.totalSitesCount}개
-- 활성 사이트: ${status.enabledSitesCount}개
-
-⏰ 마지막 크롤링 시간:
-${Object.entries(status.lastCrawledTimes)
-  .slice(0, 5)
-  .map(([siteId, time]) => `- ${siteId}: ${time}`)
-  .join('\n')}
-      `.trim()
-      
-      alert(statusText)
-    } else {
-      console.error('❌ 크롤링 상태 확인 실패:', response.status)
-      alert('크롤링 상태를 확인할 수 없습니다.')
-    }
-  } catch (error: any) {
-    console.error('❌ 크롤링 상태 확인 오류:', error)
-    alert('크롤링 상태 확인 중 오류가 발생했습니다: ' + error.message)
-  }
+const getCrawlingStatus = () => {
+  // 상태 페이지로 이동
+  import('@/router').then(({ default: router }) => {
+    router.push('/status')
+  })
 }
 </script>
 
 <template>
   <div class="home">
-    <!-- 헤더 -->
-    <header class="header">
-      <div class="header-content">
-        <h1 class="title">알리알리</h1>
-        <p class="subtitle">공지사항 알림 서비스</p>
-      </div>
-      <div class="stats">
-        <div class="stat-item">
-          <span class="stat-number">{{ newNoticesCount }}</span>
-          <span class="stat-label">새 공지</span>
-        </div>
-        <div class="stat-item">
-          <span class="stat-number">{{ activeSubscriptionsCount }}</span>
-          <span class="stat-label">구독 중</span>
+    <!-- 헤더 영역 -->
+    <header class="pt-6 pb-4 sm:pt-8 sm:pb-6 px-4 max-w-7xl mx-auto">
+      <div class="mb-6 sm:mb-8 flex items-center gap-3">
+        <img src="/AliAli_Logo.png" alt="AliAli Logo" class="w-10 h-10 sm:w-12 sm:h-12 object-contain" />
+        <div>
+          <h1 class="text-2xl sm:text-3xl font-bold text-[#191F28] font-inkliquid">AliAli</h1>
+          <p class="text-base sm:text-lg text-[#8B95A1] font-inkliquid">놓치지 않는 공지사항 알림</p>
         </div>
       </div>
-      
-      <div class="notification-permission">
-        <button 
-          v-if="!hasNotificationPermission"
-          @click="requestNotificationPermission" 
-          class="permission-btn"
-        >
-          🔔 알림 권한 허용
-        </button>
-        <button 
-          v-else
-          @click="sendTestNotification" 
-          class="test-btn"
-        >
-          📢 테스트 알림
-        </button>
-        <button 
-          @click="createTestNotice" 
-          class="test-notice-btn"
-        >
-          📝 테스트 공지사항 생성
-        </button>
-        <div v-if="hasNotificationPermission" class="permission-status">
-          ✅ 알림이 활성화되었습니다
+
+      <!-- 상태 카드 그리드 -->
+      <div class="grid grid-cols-2 gap-3 sm:gap-4 mb-4 sm:mb-6">
+        <div class="bg-white/70 backdrop-blur-xl border border-white/20 rounded-3xl p-4 sm:p-5 shadow-sm">
+          <span class="block text-[#8B95A1] text-xs sm:text-sm mb-1">새 공지</span>
+          <span class="block text-2xl sm:text-3xl font-bold text-[#3182F6]">{{ newNoticesCount }}</span>
+        </div>
+        <div class="bg-white/70 backdrop-blur-xl border border-white/20 rounded-3xl p-4 sm:p-5 shadow-sm">
+          <span class="block text-[#8B95A1] text-xs sm:text-sm mb-1">구독 중</span>
+          <span class="block text-2xl sm:text-3xl font-bold text-[#191F28]">{{ activeSubscriptionsCount }}</span>
         </div>
       </div>
       
-      <!-- 크롤링 컨트롤 -->
-      <div class="crawling-controls">
-        <h3 class="control-title">🔧 크롤링 관리</h3>
-        <div class="control-buttons">
+      <!-- 알림 권한 및 테스트 버튼 -->
+      <div class="bg-white/70 backdrop-blur-xl border border-white/20 rounded-3xl p-4 sm:p-5 shadow-sm mb-4 sm:mb-6">
+        <h3 class="text-[#191F28] font-bold mb-3 sm:mb-4">알림 설정</h3>
+        <div class="flex flex-wrap gap-2 sm:gap-3">
+          <button 
+            v-if="!hasNotificationPermission"
+            @click="requestNotificationPermission" 
+            class="px-3 py-1.5 sm:px-4 sm:py-2 bg-[#3182F6] text-white rounded-xl text-xs sm:text-sm hover:bg-blue-600 transition-colors"
+          >
+            🔔 알림 권한 허용
+          </button>
+          <button 
+            v-else
+            @click="sendTestNotification" 
+            class="px-3 py-1.5 sm:px-4 sm:py-2 bg-[#E8F3FF] text-[#3182F6] rounded-xl text-xs sm:text-sm hover:bg-[#DBEDFF] transition-colors"
+          >
+            📢 테스트 알림
+          </button>
+          <button 
+            @click="createTestNotice" 
+            class="px-3 py-1.5 sm:px-4 sm:py-2 bg-gray-100 text-[#4E5968] rounded-xl text-xs sm:text-sm hover:bg-gray-200 transition-colors"
+          >
+            📝 테스트 공지 생성
+          </button>
+        </div>
+        <div v-if="hasNotificationPermission" class="mt-3 text-sm text-[#3182F6] font-medium flex items-center">
+          <span class="mr-1">✅</span> 알림이 활성화되었습니다
+        </div>
+      </div>
+      
+      <!-- 관리자 도구 (접기/펼치기 가능하게 하거나 하단으로 이동 추천, 일단 카드화) -->
+      <div class="bg-white/70 backdrop-blur-xl border border-white/20 rounded-3xl p-4 sm:p-5 shadow-sm">
+        <h3 class="text-[#191F28] font-bold mb-3 sm:mb-4">관리자 도구</h3>
+        <div class="flex flex-wrap gap-2 sm:gap-3 mb-2 sm:mb-3">
           <button 
             @click="manualCrawlAllSites" 
-            class="crawl-btn crawl-all-btn"
+            class="px-3 py-1.5 sm:px-4 sm:py-2 border border-[#E5E8EB] text-[#4E5968] rounded-xl text-xs sm:text-sm hover:bg-gray-50 transition-colors"
           >
-            🚀 전체 사이트 크롤링
+            🚀 전체 크롤링
           </button>
           <button 
             @click="getCrawlingStatus" 
-            class="crawl-btn status-btn"
+            class="px-3 py-1.5 sm:px-4 sm:py-2 border border-[#E5E8EB] text-[#4E5968] rounded-xl text-xs sm:text-sm hover:bg-gray-50 transition-colors"
           >
-            📊 크롤링 상태 확인
+            📊 상태 확인
           </button>
         </div>
-        <div class="crawl-info">
-          <p>💡 자동 크롤링은 10분마다 실행됩니다</p>
-          <p>🔧 수동 크롤링으로 즉시 새 공지사항을 확인할 수 있습니다</p>
-        </div>
+        <p class="text-xs text-[#8B95A1]">자동 크롤링: 10분 간격</p>
       </div>
     </header>
 
     <!-- 메인 컨텐츠 -->
-    <main class="main-content">
-      <div class="section">
-        <h2 class="section-title">최신 공지사항</h2>
+    <main class="px-4 pb-24 max-w-7xl mx-auto">
+      <div class="mb-6 sm:mb-8">
+        <h2 class="text-lg sm:text-xl font-bold text-[#191F28] mb-3 sm:mb-4">최신 공지사항</h2>
         <NoticeList />
       </div>
       
-      <div class="section">
-        <h2 class="section-title">사이트 관리</h2>
+      <div class="mb-6 sm:mb-8">
+        <h2 class="text-lg sm:text-xl font-bold text-[#191F28] mb-3 sm:mb-4">사이트 관리</h2>
         <SiteList />
       </div>
     </main>
@@ -412,208 +382,5 @@ ${Object.entries(status.lastCrawledTimes)
 </template>
 
 <style scoped>
-.home {
-  min-height: 100vh;
-  padding-bottom: 80px; /* 하단 네비게이션 공간 */
-}
-
-.header {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
-  padding: 2rem 1rem;
-  text-align: center;
-}
-
-.header-content {
-  margin-bottom: 1.5rem;
-}
-
-.title {
-  font-size: 2.5rem;
-  font-weight: bold;
-  margin-bottom: 0.5rem;
-}
-
-.subtitle {
-  font-size: 1.1rem;
-  opacity: 0.9;
-}
-
-.stats {
-  display: flex;
-  justify-content: center;
-  gap: 2rem;
-}
-
-.stat-item {
-  text-align: center;
-}
-
-.stat-number {
-  display: block;
-  font-size: 2rem;
-  font-weight: bold;
-  margin-bottom: 0.25rem;
-}
-
-.stat-label {
-  font-size: 0.9rem;
-  opacity: 0.8;
-}
-
-.notification-permission {
-  margin-top: 1rem;
-  display: flex;
-  gap: 12px;
-  justify-content: center;
-}
-
-.permission-btn, .test-btn {
-  background: rgba(255, 255, 255, 0.2);
-  color: white;
-  border: 2px solid rgba(255, 255, 255, 0.3);
-  padding: 0.75rem 1.5rem;
-  border-radius: 25px;
-  font-size: 1rem;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.3s;
-}
-
-.permission-btn:hover {
-  background: rgba(255, 255, 255, 0.3);
-  border-color: rgba(255, 255, 255, 0.5);
-}
-
-.test-btn {
-  background: rgba(33, 150, 243, 0.8);
-  border-color: rgba(33, 150, 243, 0.9);
-}
-
-.test-btn:hover {
-  background: rgba(33, 150, 243, 1);
-  border-color: rgba(33, 150, 243, 1);
-}
-
-.test-notice-btn {
-  background: rgba(255, 107, 107, 0.9);
-  color: white;
-  border: 2px solid rgba(255, 107, 107, 0.9);
-  padding: 0.75rem 1.5rem;
-  border-radius: 25px;
-  font-size: 0.9rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  margin-left: 10px;
-}
-
-.test-notice-btn:hover {
-  background: rgba(255, 107, 107, 1);
-  border-color: rgba(255, 107, 107, 1);
-}
-
-.permission-status {
-  color: #28a745;
-  font-size: 0.9rem;
-  font-weight: 500;
-  margin-top: 0.5rem;
-}
-
-/* 크롤링 컨트롤 스타일 */
-.crawling-controls {
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: 15px;
-  padding: 1.5rem;
-  margin-top: 1rem;
-  backdrop-filter: blur(10px);
-}
-
-.control-title {
-  font-size: 1.2rem;
-  font-weight: 600;
-  margin-bottom: 1rem;
-  text-align: center;
-}
-
-.control-buttons {
-  display: flex;
-  gap: 1rem;
-  justify-content: center;
-  flex-wrap: wrap;
-  margin-bottom: 1rem;
-}
-
-.crawl-btn {
-  border: none;
-  padding: 0.75rem 1.5rem;
-  border-radius: 25px;
-  font-size: 0.9rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  min-width: 180px;
-}
-
-.crawl-all-btn {
-  background: #4ecdc4;
-  color: white;
-}
-
-.crawl-all-btn:hover {
-  background: #45b7b8;
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(78, 205, 196, 0.3);
-}
-
-.status-btn {
-  background: #95a5a6;
-  color: white;
-}
-
-.status-btn:hover {
-  background: #7f8c8d;
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(149, 165, 166, 0.3);
-}
-
-.crawl-info {
-  text-align: center;
-  font-size: 0.85rem;
-  opacity: 0.9;
-  line-height: 1.4;
-}
-
-.crawl-info p {
-  margin: 0.25rem 0;
-}
-
-.main-content {
-  padding: 1rem;
-}
-
-.section {
-  margin-bottom: 2rem;
-}
-
-.section-title {
-  font-size: 1.3rem;
-  font-weight: 600;
-  margin-bottom: 1rem;
-  color: #333;
-}
-
-@media (max-width: 768px) {
-  .title {
-    font-size: 2rem;
-  }
-  
-  .stats {
-    gap: 1.5rem;
-  }
-  
-  .stat-number {
-    font-size: 1.5rem;
-  }
-}
+/* Scoped styles removed in favor of Tailwind utility classes */
 </style>

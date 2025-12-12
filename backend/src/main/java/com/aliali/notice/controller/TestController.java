@@ -99,10 +99,23 @@ public class TestController {
     }
     
     @PostMapping("/test-notification")
-    public ResponseEntity<String> testNotification(@RequestParam String fcmToken, @RequestParam String deviceId) {
+    public ResponseEntity<String> testNotification(
+            @RequestParam String fcmToken, 
+            @RequestParam String deviceId,
+            @RequestParam(required = false) String title,
+            @RequestParam(required = false) String body,
+            @RequestParam(required = false) String url) {
         try {
-            notificationService.sendTestNotification(fcmToken, deviceId);
-            return ResponseEntity.ok("테스트 알림이 전송되었습니다.");
+            if (title != null || body != null) {
+                 notificationService.sendCustomNotification(fcmToken, deviceId, 
+                    title != null ? title : "알리알리 알림", 
+                    body != null ? body : "새로운 알림이 있습니다.",
+                    url);
+                 return ResponseEntity.ok("맞춤 알림이 전송되었습니다.");
+            } else {
+                notificationService.sendTestNotification(fcmToken, deviceId);
+                return ResponseEntity.ok("테스트 알림이 전송되었습니다.");
+            }
         } catch (Exception e) {
             return ResponseEntity.internalServerError().body("알림 전송 중 오류가 발생했습니다: " + e.getMessage());
         }

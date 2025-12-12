@@ -34,7 +34,7 @@ const sendTestNotification = async () => {
     }
 
     // 백엔드로 테스트 알림 전송
-    const response = await fetch('http://localhost:8080/api/test-notification', {
+    const response = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080/api'}/test-notification`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/x-www-form-urlencoded',

@@ -89,7 +89,7 @@ const testNotification = async (siteId: string) => {
     }
 
     // 백엔드로 테스트 알림 전송
-    const response = await fetch('http://localhost:8080/api/test-notification', {
+    const response = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080/api'}/test-notification`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/x-www-form-urlencoded',
@@ -192,10 +192,12 @@ const testNotification = async (siteId: string) => {
 }
 
 .site-card {
-  background: white;
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.3);
   border-radius: 12px;
   padding: 1.5rem;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -241,7 +243,6 @@ const testNotification = async (siteId: string) => {
   border: none;
   border-radius: 6px;
   font-size: 0.9rem;
-  font-weight: 500;
   cursor: pointer;
   transition: all 0.2s;
 }
@@ -274,9 +275,18 @@ const testNotification = async (siteId: string) => {
 
 @media (max-width: 768px) {
   .site-card {
+    padding: 1rem;
     flex-direction: column;
     align-items: flex-start;
     gap: 1rem;
+  }
+
+  .site-name {
+    font-size: 1rem;
+  }
+
+  .site-category, .site-url {
+    font-size: 0.8rem;
   }
   
   .site-actions {

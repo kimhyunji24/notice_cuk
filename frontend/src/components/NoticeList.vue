@@ -1,19 +1,23 @@
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
 import { useNoticeStore } from '@/stores/notice'
 import { useSubscriptionStore } from '@/stores/subscription'
 
 const noticeStore = useNoticeStore()
 const subscriptionStore = useSubscriptionStore()
 
+const filter = ref<'new' | 'all'>('all')
+
 const notices = computed(() => {
-  console.log('NoticeList - 전체 공지사항 수:', noticeStore.notices?.length);
-  console.log('NoticeList - isNew=true인 공지사항 수:', noticeStore.newNotices?.length);
-  console.log('NoticeList - RealFCMTest 포함:', noticeStore.newNotices?.some(n => n.title.includes('RealFCMTest')));
-  return noticeStore.newNotices.slice(0, 10); // newNotices 사용 (새로운 공지사항만)
+  const source = filter.value === 'new' ? noticeStore.newNotices : noticeStore.notices
+  return source.slice(0, 20)
 })
 const isLoading = computed(() => noticeStore.loading)
 const error = computed(() => noticeStore.error)
+
+const setFilter = (newFilter: 'new' | 'all') => {
+  filter.value = newFilter
+}
 
 const formatDate = (dateString: string) => {
   const date = new Date(dateString)
@@ -59,8 +63,26 @@ const getDuplicateCount = (notice: any) => {
 
 <template>
   <div class="notice-list">
+    <div class="flex gap-2 mb-4">
+      <button 
+        @click="setFilter('new')"
+        class="px-4 py-2 rounded-xl text-sm font-bold transition-all"
+        :class="filter === 'new' ? 'bg-[#3182F6] text-white shadow-md' : 'bg-white/50 text-[#8B95A1] hover:bg-white/80'"
+      >
+        새로운 공지 {{ noticeStore.newNotices.length }}
+      </button>
+      <button 
+        @click="setFilter('all')"
+        class="px-4 py-2 rounded-xl text-sm font-bold transition-all"
+        :class="filter === 'all' ? 'bg-[#3182F6] text-white shadow-md' : 'bg-white/50 text-[#8B95A1] hover:bg-white/80'"
+      >
+        전체 공지 {{ noticeStore.notices.length }}
+      </button>
+    </div>
+
     <div v-if="isLoading" class="loading">
-      공지사항을 불러오는 중...
+      <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-[#3182F6] mx-auto"></div>
+      <p class="mt-2 text-[#8B95A1]">공지사항을 불러오는 중...</p>
     </div>
     
     <div v-else-if="error" class="error">
@@ -68,14 +90,14 @@ const getDuplicateCount = (notice: any) => {
     </div>
     
     <div v-else-if="notices.length === 0" class="empty">
-      공지사항이 없습니다.
+      <p class="text-[#8B95A1]">표시할 공지사항이 없습니다.</p>
     </div>
     
     <div v-else class="notices">
       <div 
         v-for="notice in notices" 
         :key="notice.id" 
-        class="notice-card"
+        class="notice-card group"
         @click="openNotice(notice)"
       >
         <div class="notice-header">
@@ -83,7 +105,7 @@ const getDuplicateCount = (notice: any) => {
           <span class="notice-time">{{ formatDate(notice.publishedAt) }}</span>
         </div>
         
-        <h3 class="notice-title">{{ notice.title }}</h3>
+        <h3 class="notice-title group-hover:text-[#3182F6] transition-colors">{{ notice.title }}</h3>
         
         <div class="notice-badges">
           <div v-if="notice.isNew" class="new-badge">
@@ -130,10 +152,12 @@ const getDuplicateCount = (notice: any) => {
 }
 
 .notice-card {
-  background: white;
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.3);
   border-radius: 12px;
   padding: 1.5rem;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
   cursor: pointer;
   transition: transform 0.2s, box-shadow 0.2s;
   position: relative;
@@ -216,7 +240,6 @@ const getDuplicateCount = (notice: any) => {
   padding: 0.75rem 1.5rem;
   border-radius: 8px;
   font-size: 1rem;
-  font-weight: 500;
   cursor: pointer;
   transition: background 0.2s;
 }
@@ -235,6 +258,15 @@ const getDuplicateCount = (notice: any) => {
     padding: 1rem;
   }
   
+  .notice-title {
+    font-size: 1rem;
+  }
+
+  .notice-site {
+    font-size: 0.8rem;
+    padding: 0.2rem 0.6rem;
+  }
+
   .notice-header {
     flex-direction: column;
     align-items: flex-start;

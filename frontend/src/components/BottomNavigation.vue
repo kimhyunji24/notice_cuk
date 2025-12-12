@@ -1,111 +1,28 @@
 <script setup lang="ts">
-import { computed } from 'vue'
-import { useRouter, useRoute } from 'vue-router'
-
-const router = useRouter()
-const route = useRoute()
-
-const navItems = [
-  { name: '홈', path: '/', icon: '🏠' },
-  { name: '구독', path: '/subscriptions', icon: '🔔' },
-  { name: '설정', path: '/settings', icon: '⚙️' }
-]
-
-const isActive = (path: string) => {
-  return route.path === path
-}
-
-const navigateTo = (path: string) => {
-  router.push(path)
-}
+import { RouterLink } from 'vue-router'
 </script>
 
 <template>
-  <nav class="bottom-nav">
-    <div class="nav-container">
-      <button
-        v-for="item in navItems"
-        :key="item.path"
-        @click="navigateTo(item.path)"
-        :class="['nav-item', { active: isActive(item.path) }]"
-      >
-        <span class="nav-icon">{{ item.icon }}</span>
-        <span class="nav-label">{{ item.name }}</span>
-      </button>
+  <div class="fixed bottom-0 left-0 z-50 w-full h-16 bg-white/80 backdrop-blur-xl border-t border-white/20 sm:hidden">
+    <div class="grid h-full max-w-lg grid-cols-3 mx-auto font-medium">
+      <RouterLink to="/" class="inline-flex flex-col items-center justify-center px-5 hover:bg-gray-50 group" active-class="text-[#3182F6]">
+        <svg class="w-6 h-6 mb-1 text-[#8B95A1] group-hover:text-[#3182F6] group-[.router-link-active]:text-[#3182F6]" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 20 20">
+          <path d="m19.707 9.293-2-2-7-7a1 1 0 0 0-1.414 0l-7 7-2 2a1 1 0 0 0 1.414 1.414L2 10.414V18a2 2 0 0 0 2 2h3a1 1 0 0 0 1-1v-4a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v4a1 1 0 0 0 1 1h3a2 2 0 0 0 2-2v-7.586l.293.293a1 1 0 0 0 1.414-1.414Z"/>
+        </svg>
+        <span class="text-xs text-[#8B95A1] group-hover:text-[#3182F6] group-[.router-link-active]:text-[#3182F6]">Home</span>
+      </RouterLink>
+      <RouterLink to="/search" class="inline-flex flex-col items-center justify-center px-5 hover:bg-gray-50 group" active-class="text-[#3182F6]">
+        <svg class="w-6 h-6 mb-1 text-[#8B95A1] group-hover:text-[#3182F6] group-[.router-link-active]:text-[#3182F6]" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 20">
+            <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m19 19-4-4m0-7A7 7 0 1 1 1 8a7 7 0 0 1 14 0Z"/>
+        </svg>
+        <span class="text-xs text-[#8B95A1] group-hover:text-[#3182F6] group-[.router-link-active]:text-[#3182F6]">Search</span>
+      </RouterLink>
+      <RouterLink to="/profile" class="inline-flex flex-col items-center justify-center px-5 hover:bg-gray-50 group" active-class="text-[#3182F6]">
+        <svg class="w-6 h-6 mb-1 text-[#8B95A1] group-hover:text-[#3182F6] group-[.router-link-active]:text-[#3182F6]" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 20 20">
+          <path d="M10 0a10 10 0 1 0 10 10A10.011 10.011 0 0 0 10 0Zm0 5a3 3 0 1 1-3 3 3.003 3.003 0 0 1 3-3Zm5.766 12.643A8 8 0 0 1 10 18a8 8 0 0 1-5.766-2.357 5 5 0 0 1 9.532 0Z"/>
+        </svg>
+        <span class="text-xs text-[#8B95A1] group-hover:text-[#3182F6] group-[.router-link-active]:text-[#3182F6]">Profile</span>
+      </RouterLink>
     </div>
-  </nav>
+  </div>
 </template>
-
-<style scoped>
-.bottom-nav {
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  background: white;
-  border-top: 1px solid #e9ecef;
-  z-index: 1000;
-  padding: 0.5rem 0;
-}
-
-.nav-container {
-  display: flex;
-  justify-content: space-around;
-  max-width: 500px;
-  margin: 0 auto;
-  padding: 0 1rem;
-}
-
-.nav-item {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 0.25rem;
-  padding: 0.5rem;
-  border: none;
-  background: none;
-  cursor: pointer;
-  transition: all 0.2s;
-  border-radius: 8px;
-  min-width: 60px;
-}
-
-.nav-item:hover {
-  background: #f8f9fa;
-}
-
-.nav-item.active {
-  background: #e3f2fd;
-  color: #007bff;
-}
-
-.nav-icon {
-  font-size: 1.2rem;
-  line-height: 1;
-}
-
-.nav-label {
-  font-size: 0.75rem;
-  font-weight: 500;
-  line-height: 1;
-}
-
-@media (max-width: 480px) {
-  .nav-container {
-    padding: 0 0.5rem;
-  }
-  
-  .nav-item {
-    min-width: 50px;
-    padding: 0.25rem;
-  }
-  
-  .nav-icon {
-    font-size: 1rem;
-  }
-  
-  .nav-label {
-    font-size: 0.7rem;
-  }
-}
-</style>

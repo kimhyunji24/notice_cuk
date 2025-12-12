@@ -113,6 +113,26 @@ public class NotificationService {
             logger.error("Failed to send test notification to device: {}", deviceId);
         }
     }
+
+    public void sendCustomNotification(String fcmToken, String deviceId, String title, String body, String url) {
+        if (!firebaseService.isFirebaseAvailable()) {
+            logger.warn("Firebase not available, skipping custom notification");
+            return;
+        }
+        
+        String data = String.format(
+            "{\"type\":\"custom\",\"url\":\"%s\",\"timestamp\":\"%s\"}", 
+            url != null ? url : "",
+            LocalDateTime.now()
+        );
+        
+        boolean success = firebaseService.sendNotification(fcmToken, title, body, data);
+        if (success) {
+            logger.info("Custom notification sent successfully to device: {}", deviceId);
+        } else {
+            logger.error("Failed to send custom notification to device: {}", deviceId);
+        }
+    }
     
     public void sendBulkNotification(String title, String body, String data) {
         if (!firebaseService.isFirebaseAvailable()) {
